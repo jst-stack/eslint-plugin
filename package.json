@@ -1,0 +1,54 @@
+{
+	"name": "@jst-stack/eslint-plugin",
+	"version": "0.1.0",
+	"description": "Executable architecture and source-quality contracts for JST React applications.",
+	"type": "module",
+	"license": "MIT",
+	"engines": {
+		"node": ">=20.19"
+	},
+	"exports": {
+		".": "./src/index.mjs",
+		"./package.json": "./package.json"
+	},
+	"bin": {
+		"jst-lint": "./bin/jst-lint.mjs"
+	},
+	"files": [
+		"bin",
+		"LICENSE",
+		"README.md",
+		"src"
+	],
+	"scripts": {
+		"lint": "eslint . --max-warnings 0",
+		"test": "node --test",
+		"check": "npm run lint && npm test && npm pack --dry-run"
+	},
+	"peerDependencies": {
+		"eslint": "^9.5.0 || ^10.0.0"
+	},
+	"dependencies": {
+		"@boundaries/eslint-plugin": "^7.2.0"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"eslint": "^10.10.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jst-stack/eslint-plugin.git"
+	},
+	"bugs": {
+		"url": "https://github.com/jst-stack/eslint-plugin/issues"
+	},
+	"homepage": "https://github.com/jst-stack/eslint-plugin#readme",
+	"keywords": [
+		"architecture",
+		"eslint",
+		"eslintplugin",
+		"fsd",
+		"jst",
+		"react"
+	]
+}
