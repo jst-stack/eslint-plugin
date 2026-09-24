@@ -13,12 +13,14 @@ test('accepts the kernel and rejects UI orchestration and unowned styles', async
 			await mkdir(resolve(root, 'src', layer), { recursive: true })
 		}
 		await mkdir(resolve(root, 'src/app/container'), { recursive: true })
+		await mkdir(resolve(root, 'src/shared/di'), { recursive: true })
 		await writeFile(resolve(root, 'package.json'), JSON.stringify({ dependencies: { '@needle-di/core': '1.0.0' } }))
 		await writeFile(resolve(root, 'src/app/container/container.composition.ts'), `import.meta.glob([
 			'../../entities/**/*.provider.ts',
 			'../../features/**/*.provider.ts',
 			'../../shared/**/*.provider.ts',
 		])\n`)
+		await writeFile(resolve(root, 'src/shared/di/serviceLocator.context.ts'), 'export const useService = () => null\n')
 		await checkArchitecture(root)
 		await checkStyles(root)
 

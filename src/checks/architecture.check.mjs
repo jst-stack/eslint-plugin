@@ -48,7 +48,8 @@ async function assertSourceBoundaries(root) {
 		if (/\/src\/(?:widgets|features|entities)\/[^/]+\/ui\//u.test(path) && forbiddenUiImport.test(source)) {
 			uiImportViolations.push(getProjectPath(path, root))
 		}
-		if (!/\/src\/(?:app|pages)\//u.test(path) && /\buseService\b/u.test(source)) {
+		if (!/\/src\/(?:app|pages)\//u.test(path) && /\buseService\b/u.test(source)
+			&& !/export\s+const\s+useService\b/u.test(source)) {
 			serviceLocatorViolations.push(getProjectPath(path, root))
 		}
 	}
