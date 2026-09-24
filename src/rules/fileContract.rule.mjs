@@ -15,17 +15,26 @@ const sliceLayers = {
 	features: new Set(['__tests__', 'lib', 'model', 'ui']),
 	widgets: new Set(['__tests__', 'lib', 'model', 'ui']),
 }
-const roleDirectory = {
-	builder: 'model',
-	component: 'ui',
-	dto: 'repository',
-	gateway: 'repository',
-	mapper: 'model',
-	model: 'model',
-	parser: 'repository',
-	repository: 'repository',
-	service: 'services',
-}
+const roleDirectory = new Map([
+	['action', 'model'],
+	['adapter', 'repository'],
+	['builder', 'model'],
+	['component', 'ui'],
+	['dto', 'repository'],
+	['entry', undefined],
+	['gateway', 'repository'],
+	['injector', undefined],
+	['mapper', 'model'],
+	['model', 'model'],
+	['parser', 'repository'],
+	['persister', 'repository'],
+	['provider', undefined],
+	['repository', 'repository'],
+	['schema', 'model'],
+	['service', 'services'],
+	['store', undefined],
+	['viewModel', undefined],
+])
 
 export const fileContract = {
 	meta: {
@@ -104,10 +113,11 @@ function validateRoleDirectory({ context, directory, fileName, node, parts }) {
 	if (role === 'test' && parts.includes('__tests__')) {
 		return
 	}
-	const expectedDirectory = role === 'test' ? '__tests__' : roleDirectory[role]
-	if (expectedDirectory && directory !== expectedDirectory) {
+	const hasExpectedDirectory = role === 'test' || roleDirectory.has(role)
+	const expectedDirectory = role === 'test' ? '__tests__' : roleDirectory.get(role)
+	if (hasExpectedDirectory && directory !== expectedDirectory) {
 		context.report({
-			data: { directory: expectedDirectory, role },
+			data: { directory: expectedDirectory ?? 'root', role },
 			messageId: 'roleDirectory',
 			node,
 		})

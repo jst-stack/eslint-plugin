@@ -5,6 +5,11 @@ import { findExisting, listFiles } from '../lib/files.lib.mjs'
 import { getProjectPath } from '../lib/path.lib.mjs'
 
 const layers = ['app', 'pages', 'widgets', 'features', 'entities', 'shared']
+const providerGlobs = [
+	'../../entities/**/*.provider.ts',
+	'../../features/**/*.provider.ts',
+	'../../shared/**/*.provider.ts',
+]
 const forbiddenUiImport = /from\s+['"][^'"]*(?:@\/app\/|\.injector|\.store|\/(?:data|repository|services)\/)[^'"]*['"]/u
 
 export async function checkArchitecture(root = process.cwd()) {
@@ -27,8 +32,9 @@ async function assertDiKernel(root) {
 		'src/app/container/container.ts',
 	])
 	const source = await readFile(path, 'utf8')
-	if (!source.includes("'../../features/**/*.provider.ts'")) {
-		throw new Error('DI composition must auto-discover src/features/**/*.provider.ts modules.')
+	const missingGlobs = providerGlobs.filter(glob => !source.includes(`'${glob}'`) && !source.includes(`"${glob}"`))
+	if (missingGlobs.length) {
+		throw new Error(`DI composition must auto-discover provider modules:\n${missingGlobs.join('\n')}`)
 	}
 }
 

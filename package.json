@@ -1,6 +1,6 @@
 {
 	"name": "@jst-stack/eslint-plugin",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Executable architecture and source-quality contracts for JST React applications.",
 	"type": "module",
 	"license": "MIT",
@@ -27,9 +27,6 @@
 	},
 	"peerDependencies": {
 		"eslint": "^9.5.0 || ^10.0.0"
-	},
-	"dependencies": {
-		"@boundaries/eslint-plugin": "^7.2.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
