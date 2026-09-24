@@ -7,7 +7,7 @@ const frameworkFiles = new Set([
 	'src/routes.ts',
 	'src/vite-env.d.ts',
 ])
-const roles = 'action|adapter|builder|check|client|component|composition|config|context|dto|entry|factory|gateway|hook|injector|lib|mapper|model|page|parser|persister|policy|provider|repository|rule|schema|service|store|types|util|viewModel'
+const roles = 'action|adapter|builder|check|component|composition|config|context|dto|entry|factory|gateway|hook|injector|lib|mapper|model|page|parser|persister|policy|provider|repository|rule|schema|service|store|types|util|viewModel'
 const filePattern = new RegExp(`^[a-z][A-Za-z0-9]*\\.(?:${roles})\\.(?:js|mjs|ts|tsx)$`, 'u')
 const testFilePattern = new RegExp(`^[a-z][A-Za-z0-9]*(?:\\.(?:${roles}))?\\.test\\.(?:js|mjs|ts|tsx)$`, 'u')
 const sliceLayers = {
@@ -17,7 +17,6 @@ const sliceLayers = {
 }
 const roleDirectory = {
 	builder: 'model',
-	client: 'repository',
 	component: 'ui',
 	dto: 'repository',
 	gateway: 'repository',

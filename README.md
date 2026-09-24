@@ -25,4 +25,6 @@ export default antfu(
 
 The recommended flat config enforces layer direction, file roles, slice structure, effect boundaries, props-driven UI, complexity, nesting, and source-size limits. The CLI checks cross-file architecture invariants and CSS Module ownership.
 
+Use `*.adapter.ts` for browser and HTTP adapters. React Router reserves `*.client.*` for client-only modules, so it is intentionally not a JST role.
+
 Requires ESLint 9.5+ or 10 and Node.js 20.19+.
