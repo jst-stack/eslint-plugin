@@ -65,6 +65,12 @@ test('keeps network, persistence, and browser effects behind adapters', () => {
 	assert.equal(errors(lint("import axios from 'axios'; export const load = () => axios.get('/orders')", 'src/entities/order/repository/orders.repository.ts')).length, 0)
 })
 
+test('keeps models and services independent from state managers', () => {
+	assert.match(text(lint("import { atom } from '@reatom/core'", 'src/entities/order/model/order.model.ts')), /Models, services, repositories, and views stay state-manager agnostic/u)
+	assert.equal(errors(lint("import { atom } from '@reatom/core'; export const orders = atom([])", 'src/entities/order/orders.store.ts')).length, 0)
+	assert.equal(errors(lint("import { reatomComponent } from '@reatom/react'", 'src/features/orders/orders.entry.tsx')).length, 0)
+})
+
 test('rejects the five previously missed architecture violations', () => {
 	const cases = [
 		["import axios from 'axios'; export function Checkout() { const total = items.reduce((sum, item) => sum + item.price, 0); return axios.post('/checkout', { total }) }", 'src/features/checkout/ui/checkout.component.tsx'],

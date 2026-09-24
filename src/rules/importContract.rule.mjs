@@ -3,6 +3,7 @@ import { getProjectPath } from '../lib/path.lib.mjs'
 
 const layers = ['app', 'pages', 'widgets', 'features', 'entities', 'shared']
 const slicedLayers = new Set(['pages', 'widgets', 'features', 'entities'])
+const statePackages = ['@reatom/', '@reduxjs/', '@tanstack/react-query', 'effector', 'jotai', 'mobx', 'redux', 'zustand']
 const allowedTargets = {
 	app: new Set(layers),
 	pages: new Set(['pages', 'widgets', 'features', 'entities', 'shared']),
@@ -18,6 +19,7 @@ export const importContract = {
 		messages: {
 			layer: '{{source}} cannot depend on {{target}}. Dependencies point app → pages → widgets → features → entities → shared.',
 			slice: 'Do not import directly across {{layer}} slices ({{source}} → {{target}}). Compose them in a higher layer or inject a narrow port.',
+			state: 'Keep {{name}} in a store, feature entry, page, or app composition root. Models, services, repositories, and views stay state-manager agnostic.',
 		},
 		schema: [],
 		type: 'problem',
@@ -50,6 +52,9 @@ function validateImport(context, node, source, sourcePath) {
 	if (typeof specifier !== 'string') {
 		return
 	}
+	if (isStatePackage(specifier) && !isStateOwner(sourcePath, source.layer)) {
+		context.report({ data: { name: specifier }, messageId: 'state', node })
+	}
 	const targetPath = resolveSourceImport(sourcePath, specifier)
 	const target = getUnit(targetPath)
 	if (!target) {
@@ -66,6 +71,14 @@ function validateImport(context, node, source, sourcePath) {
 			node,
 		})
 	}
+}
+
+function isStateOwner(path, layer) {
+	return ['app', 'pages'].includes(layer) || /\.(?:entry|store)\.[jt]sx?$/u.test(path)
+}
+
+function isStatePackage(name) {
+	return statePackages.some(packageName => name === packageName || name.startsWith(packageName))
 }
 
 function resolveSourceImport(sourcePath, specifier) {
