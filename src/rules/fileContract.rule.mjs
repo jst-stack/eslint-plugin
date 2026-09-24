@@ -97,11 +97,14 @@ function validateSliceLocation(context, node, parts) {
 			node,
 		})
 	}
-	validateRoleDirectory(context, node, parts.at(-1), directory)
+	validateRoleDirectory({ context, directory, fileName: parts.at(-1), node, parts })
 }
 
-function validateRoleDirectory(context, node, fileName, directory) {
+function validateRoleDirectory({ context, directory, fileName, node, parts }) {
 	const role = fileName.split('.').at(-2)
+	if (role === 'test' && parts.includes('__tests__')) {
+		return
+	}
 	const expectedDirectory = role === 'test' ? '__tests__' : roleDirectory[role]
 	if (expectedDirectory && directory !== expectedDirectory) {
 		context.report({
