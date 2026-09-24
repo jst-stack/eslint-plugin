@@ -1,30 +1,5 @@
+import { createPolicy } from '../configs/defaultPolicy.config.mjs'
 import { getProjectPath } from '../lib/path.lib.mjs'
-
-const statePackages = [
-	'@apollo/client',
-	'@reduxjs/',
-	'@reatom/',
-	'@tanstack/react-query',
-	'effector',
-	'jotai',
-	'mobx',
-	'redux',
-	'zustand',
-]
-const booleanVariantNames = new Set([
-	'compact',
-	'danger',
-	'dense',
-	'error',
-	'ghost',
-	'large',
-	'loading',
-	'outline',
-	'primary',
-	'secondary',
-	'small',
-	'success',
-])
 
 export const uiContract = {
 	meta: {
@@ -35,28 +10,29 @@ export const uiContract = {
 			flagProps: 'Replace boolean variant props ({{names}}) with one explicit variant prop, slots, or composition.',
 			stateImport: 'Do not bind view modules to {{name}}. Observe state in the feature entry and pass plain props and callbacks.',
 		},
-		schema: [],
+		schema: [{ type: 'object' }],
 		type: 'problem',
 	},
 	create(context) {
+		const policy = createUiPolicy(context.options[0])
 		const path = getProjectPath(context.filename)
 		if (!/\/ui\/.*\.component\.[jt]sx$/u.test(path)) {
 			return {}
 		}
 		const typedFlags = []
 		return {
-			ArrowFunctionExpression: node => validateFunction(context, node),
+			ArrowFunctionExpression: node => validateFunction(context, node, policy),
 			CallExpression(node) {
 				if (node.callee.type === 'MemberExpression' && node.callee.property.type === 'Identifier'
-					&& ['reduce', 'sort', 'sortBy', 'toSorted'].includes(node.callee.property.name)) {
+					&& policy.calculationMethods.has(node.callee.property.name)) {
 					context.report({ messageId: 'calculation', node })
 				}
 			},
-			FunctionDeclaration: node => validateFunction(context, node),
-			FunctionExpression: node => validateFunction(context, node),
+			FunctionDeclaration: node => validateFunction(context, node, policy),
+			FunctionExpression: node => validateFunction(context, node, policy),
 			ImportDeclaration(node) {
 				const name = node.source.value
-				if (typeof name === 'string' && statePackages.some(packageName => name === packageName || name.startsWith(packageName))) {
+				if (typeof name === 'string' && policy.statePackages.some(packageName => name === packageName || name.startsWith(packageName))) {
 					context.report({ data: { name }, messageId: 'stateImport', node })
 				}
 			},
@@ -66,7 +42,7 @@ export const uiContract = {
 				}
 			},
 			'*:exit'(node) {
-				if (node.type === 'TSPropertySignature' && node.key.type === 'Identifier' && booleanVariantNames.has(node.key.name)
+				if (node.type === 'TSPropertySignature' && node.key.type === 'Identifier' && policy.booleanVariantNames.has(node.key.name)
 					&& node.typeAnnotation?.typeAnnotation.type === 'TSBooleanKeyword') {
 					typedFlags.push({ name: node.key.name, node })
 				}
@@ -75,7 +51,7 @@ export const uiContract = {
 	},
 }
 
-function validateFunction(context, node) {
+function validateFunction(context, node, policy) {
 	if (node.async) {
 		context.report({ messageId: 'asyncView', node })
 	}
@@ -85,8 +61,17 @@ function validateFunction(context, node) {
 	}
 	const flags = props.properties
 		.map(property => property.type === 'Property' && property.key.type === 'Identifier' ? property.key.name : undefined)
-		.filter(name => booleanVariantNames.has(name))
+		.filter(name => policy.booleanVariantNames.has(name))
 	if (flags.length > 1) {
 		context.report({ data: { names: flags.join(', ') }, messageId: 'flagProps', node: props })
+	}
+}
+
+function createUiPolicy(overrides) {
+	const ui = createPolicy({ ui: overrides }).ui
+	return {
+		...ui,
+		booleanVariantNames: new Set(ui.booleanVariantNames),
+		calculationMethods: new Set(ui.calculationMethods),
 	}
 }

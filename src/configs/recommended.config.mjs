@@ -1,18 +1,21 @@
-export function createRecommendedConfig(plugin) {
+import { createPolicy } from './defaultPolicy.config.mjs'
+
+export function createRecommendedConfig(plugin, overrides) {
+	const policy = createPolicy(overrides)
 	return [
 		{
 			files: ['src/{app,pages,widgets,features,entities,shared}/**/*.{ts,tsx}'],
 			plugins: { jst: plugin },
 			rules: {
-				'complexity': ['error', 12],
-				'jst/effects-at-boundary': 'error',
-				'jst/file-contract': 'error',
-				'jst/import-contract': 'error',
-				'jst/ui-contract': 'error',
-				'max-depth': ['error', 3],
-				'max-lines': ['error', { max: 250, skipBlankLines: true, skipComments: true }],
-				'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
-				'max-params': ['error', 4],
+				'complexity': ['error', policy.limits.complexity],
+				'jst/effects-at-boundary': ['error', policy.effects],
+				'jst/file-contract': ['error', policy.files],
+				'jst/import-contract': ['error', policy.imports],
+				'jst/ui-contract': ['error', policy.ui],
+				'max-depth': ['error', policy.limits.maxDepth],
+				'max-lines': ['error', { max: policy.limits.maxLines, skipBlankLines: true, skipComments: true }],
+				'max-lines-per-function': ['error', { max: policy.limits.maxLinesPerFunction, skipBlankLines: true, skipComments: true }],
+				'max-params': ['error', policy.limits.maxParams],
 			},
 		},
 		{

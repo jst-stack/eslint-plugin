@@ -1,40 +1,5 @@
 import { getProjectPath } from '../lib/path.lib.mjs'
-
-const frameworkFiles = new Set([
-	'src/entry.client.tsx',
-	'src/entry.server.tsx',
-	'src/root.tsx',
-	'src/routes.ts',
-	'src/vite-env.d.ts',
-])
-const roles = 'action|adapter|builder|check|component|composition|config|context|dto|entry|factory|gateway|hook|injector|lib|mapper|model|page|parser|persister|policy|provider|repository|rule|schema|service|store|types|util|viewModel'
-const filePattern = new RegExp(`^[a-z][A-Za-z0-9]*\\.(?:${roles})\\.(?:js|mjs|ts|tsx)$`, 'u')
-const testFilePattern = new RegExp(`^[a-z][A-Za-z0-9]*(?:\\.(?:${roles}))?\\.test\\.(?:js|mjs|ts|tsx)$`, 'u')
-const sliceLayers = {
-	entities: new Set(['__tests__', 'lib', 'model', 'repository', 'services', 'ui']),
-	features: new Set(['__tests__', 'lib', 'model', 'ui']),
-	widgets: new Set(['__tests__', 'lib', 'model', 'ui']),
-}
-const roleDirectory = new Map([
-	['action', 'model'],
-	['adapter', 'repository'],
-	['builder', 'model'],
-	['component', 'ui'],
-	['dto', 'repository'],
-	['entry', undefined],
-	['gateway', 'repository'],
-	['injector', undefined],
-	['mapper', 'model'],
-	['model', 'model'],
-	['parser', 'repository'],
-	['persister', 'repository'],
-	['provider', undefined],
-	['repository', 'repository'],
-	['schema', 'model'],
-	['service', 'services'],
-	['store', undefined],
-	['viewModel', undefined],
-])
+import { createPolicy } from '../configs/defaultPolicy.config.mjs'
 
 export const fileContract = {
 	meta: {
@@ -46,34 +11,35 @@ export const fileContract = {
 			sliceName: 'Rename slice "{{name}}" to lowerCamelCase.',
 			unknownDirectory: 'Move this file into an allowed {{layer}} slice directory: {{directories}}.',
 		},
-		schema: [],
+		schema: [{ type: 'object' }],
 		type: 'problem',
 	},
 	create(context) {
+		const policy = createFilePolicy(context.options[0])
 		return {
 			Program(node) {
 				const path = getProjectPath(context.filename)
-				validateFile(context, node, path)
+				validateFile(context, node, path, policy)
 			},
 		}
 	},
 }
 
-function validateFile(context, node, path) {
-	if (!isSourceFile(path) || frameworkFiles.has(path) || /\/route\.tsx$/u.test(path)) {
+function validateFile(context, node, path, policy) {
+	if (!isSourceFile(path) || policy.frameworkFiles.has(path) || /\/route\.tsx$/u.test(path)) {
 		return
 	}
 	const parts = path.split('/')
-	validateFileName(context, node, parts.at(-1))
-	validateSliceLocation(context, node, parts)
+	validateFileName(context, node, parts.at(-1), policy)
+	validateSliceLocation(context, node, parts, policy)
 }
 
 function isSourceFile(path) {
 	return path.startsWith('src/') && /\.(?:js|mjs|ts|tsx)$/u.test(path)
 }
 
-function validateFileName(context, node, fileName) {
-	if (filePattern.test(fileName) || testFilePattern.test(fileName)) {
+function validateFileName(context, node, fileName, policy) {
+	if (policy.filePattern.test(fileName) || policy.testFilePattern.test(fileName)) {
 		return
 	}
 	context.report({
@@ -83,9 +49,9 @@ function validateFileName(context, node, fileName) {
 	})
 }
 
-function validateSliceLocation(context, node, parts) {
+function validateSliceLocation(context, node, parts, policy) {
 	const layer = parts[1]
-	const directories = sliceLayers[layer]
+	const directories = policy.sliceLayers[layer]
 	if (!directories) {
 		return
 	}
@@ -105,10 +71,10 @@ function validateSliceLocation(context, node, parts) {
 			node,
 		})
 	}
-	validateRoleDirectory({ context, directory, fileName: parts.at(-1), node, parts })
+	validateRoleDirectory({ context, directory, fileName: parts.at(-1), node, parts, roleDirectory: policy.roleDirectory })
 }
 
-function validateRoleDirectory({ context, directory, fileName, node, parts }) {
+function validateRoleDirectory({ context, directory, fileName, node, parts, roleDirectory }) {
 	const role = fileName.split('.').at(-2)
 	if (role === 'test' && parts.includes('__tests__')) {
 		return
@@ -121,5 +87,18 @@ function validateRoleDirectory({ context, directory, fileName, node, parts }) {
 			messageId: 'roleDirectory',
 			node,
 		})
+	}
+}
+
+function createFilePolicy(overrides) {
+	const files = createPolicy({ files: overrides }).files
+	const roles = files.roles.join('|')
+	const testSuffixes = files.testSuffixes.join('|')
+	return {
+		filePattern: new RegExp(`^[a-z][A-Za-z0-9]*\\.(?:${roles})\\.(?:js|mjs|ts|tsx)$`, 'u'),
+		frameworkFiles: new Set(files.frameworkFiles),
+		roleDirectory: new Map(Object.entries(files.roleDirectories).map(([role, directory]) => [role, directory ?? undefined])),
+		sliceLayers: Object.fromEntries(Object.entries(files.sliceDirectories).map(([layer, directories]) => [layer, new Set(directories)])),
+		testFilePattern: new RegExp(`^[a-z][A-Za-z0-9]*(?:\\.(?:${roles}))?\\.(?:${testSuffixes})\\.(?:js|mjs|ts|tsx)$`, 'u'),
 	}
 }

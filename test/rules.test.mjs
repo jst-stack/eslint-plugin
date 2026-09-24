@@ -50,6 +50,16 @@ test('enforces filenames and every structural role with actionable errors', () =
 	}
 })
 
+test('creates a custom standard without editing rule implementations', () => {
+	const custom = plugin.createConfig({
+		files: { testSuffixes: ['spec'] },
+		limits: { maxLines: 400 },
+	})
+	assert.equal(errors(linter.verify('export const value = 1', custom, { filename: 'src/shared/lib/value.spec.ts' })).length, 0)
+	assert.match(text(linter.verify('export const value = 1', custom, { filename: 'src/shared/lib/value.test.ts' })), /Rename "value\.test\.ts"/u)
+	assert.deepEqual(custom[0].rules['max-lines'], ['error', { max: 400, skipBlankLines: true, skipComments: true }])
+})
+
 test('keeps network, persistence, and browser effects behind adapters', () => {
 	const invalidCases = [
 		"import axios from 'axios'; export const load = () => axios.get('/orders')",

@@ -14,6 +14,20 @@ export default antfu(
 )
 ```
 
+Override policy without forking rules:
+
+```js
+export default antfu(
+  { react: true, typescript: true },
+  ...jst.createConfig({
+    files: { testSuffixes: ['spec'] },
+    limits: { maxLines: 300 },
+  }),
+)
+```
+
+`createConfig` accepts focused overrides for `files`, `imports`, `effects`, `ui`, and `limits`; unspecified values retain the strict JST defaults.
+
 ```json
 {
   "scripts": {

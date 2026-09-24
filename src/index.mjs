@@ -16,5 +16,6 @@ const plugin = {
 }
 
 plugin.configs.recommended = createRecommendedConfig(plugin)
+plugin.createConfig = overrides => createRecommendedConfig(plugin, overrides)
 
 export default plugin

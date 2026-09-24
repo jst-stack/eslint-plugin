@@ -1,18 +1,5 @@
+import { createPolicy } from '../configs/defaultPolicy.config.mjs'
 import { getProjectPath } from '../lib/path.lib.mjs'
-
-const effectObjects = new Set(['caches', 'firebase', 'indexedDB', 'localStorage', 'sessionStorage', 'supabase'])
-const effectConstructors = new Set(['BroadcastChannel', 'EventSource', 'WebSocket', 'Worker'])
-const effectPackages = [
-	'@apollo/client',
-	'@firebase/',
-	'@supabase/',
-	'axios',
-	'firebase',
-	'graphql-request',
-	'ky',
-	'urql',
-	'wretch',
-]
 
 export const effectsAtBoundary = {
 	meta: {
@@ -20,10 +7,11 @@ export const effectsAtBoundary = {
 		messages: {
 			effect: 'Move {{effect}} access behind an entity repository or shared infrastructure adapter and inject its narrow port.',
 		},
-		schema: [],
+		schema: [{ type: 'object' }],
 		type: 'problem',
 	},
 	create(context) {
+		const policy = createEffectPolicy(context.options[0])
 		const path = getProjectPath(context.filename)
 		if (isEffectBoundary(path)) {
 			return {}
@@ -40,17 +28,17 @@ export const effectsAtBoundary = {
 				}
 			},
 			ImportExpression(node) {
-				reportEffectPackage(node, node.source?.value, report)
+				reportEffectPackage(node, node.source?.value, report, policy)
 			},
 			ImportDeclaration(node) {
-				reportEffectPackage(node, node.source.value, report)
+				reportEffectPackage(node, node.source.value, report, policy)
 			},
 			MemberExpression(node) {
-				if (node.object.type === 'Identifier' && effectObjects.has(node.object.name)) {
+				if (node.object.type === 'Identifier' && policy.globals.has(node.object.name)) {
 					report(node, node.object.name)
 				}
 				if (node.object.type === 'Identifier' && ['globalThis', 'window'].includes(node.object.name)
-					&& node.property.type === 'Identifier' && effectObjects.has(node.property.name)) {
+					&& node.property.type === 'Identifier' && policy.globals.has(node.property.name)) {
 					report(node, node.property.name)
 				}
 				if (isMember(node, 'document', 'cookie')) {
@@ -58,7 +46,7 @@ export const effectsAtBoundary = {
 				}
 			},
 			NewExpression(node) {
-				if (node.callee.type === 'Identifier' && effectConstructors.has(node.callee.name)) {
+				if (node.callee.type === 'Identifier' && policy.constructors.has(node.callee.name)) {
 					report(node, node.callee.name)
 				}
 			},
@@ -77,8 +65,17 @@ function isMember(node, object, property) {
 		&& node.property.type === 'Identifier' && node.property.name === property
 }
 
-function reportEffectPackage(node, name, report) {
-	if (typeof name === 'string' && effectPackages.some(packageName => name === packageName || name.startsWith(packageName))) {
+function reportEffectPackage(node, name, report, policy) {
+	if (typeof name === 'string' && policy.packages.some(packageName => name === packageName || name.startsWith(packageName))) {
 		report(node, name)
+	}
+}
+
+function createEffectPolicy(overrides) {
+	const effects = createPolicy({ effects: overrides }).effects
+	return {
+		...effects,
+		constructors: new Set(effects.constructors),
+		globals: new Set(effects.globals),
 	}
 }
