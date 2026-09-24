@@ -1,4 +1,5 @@
 import { createRecommendedConfig } from './configs/recommended.config.mjs'
+import { defaultPolicy } from './configs/defaultPolicy.config.mjs'
 import { effectsAtBoundary } from './rules/effectsAtBoundary.rule.mjs'
 import { fileContract } from './rules/fileContract.rule.mjs'
 import { importContract } from './rules/importContract.rule.mjs'
@@ -17,5 +18,6 @@ const plugin = {
 
 plugin.configs.recommended = createRecommendedConfig(plugin)
 plugin.createConfig = overrides => createRecommendedConfig(plugin, overrides)
+plugin.defaultPolicy = defaultPolicy
 
 export default plugin
