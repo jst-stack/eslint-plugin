@@ -16,7 +16,9 @@ const config = [{
 
 test('reports an actionable filename and role-directory error', () => {
 	const messages = lint('export const value = 1', 'src/entities/order/ui/BadName.ts')
+	const reservedClientSuffix = lint('export const value = 1', 'src/shared/api/http.client.ts')
 	assert.match(messages.join('\n'), /Rename "BadName\.ts"/u)
+	assert.match(reservedClientSuffix.join('\n'), /Rename "http\.client\.ts"/u)
 })
 
 test('reports effects outside adapters and accepts repository effects', () => {
