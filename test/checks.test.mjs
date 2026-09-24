@@ -3,7 +3,8 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { test } from 'node:test'
-import { checkArchitecture, checkStyles } from '../src/checks.mjs'
+import { checkArchitecture } from '../src/checks/architecture.check.mjs'
+import { checkStyles } from '../src/checks/styles.check.mjs'
 
 test('accepts the kernel and rejects UI orchestration and unowned styles', async () => {
 	const root = await mkdtemp(resolve(tmpdir(), 'jst-lint-'))

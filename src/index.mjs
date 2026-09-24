@@ -1,6 +1,6 @@
-import { createRecommendedConfig } from './configs.mjs'
-import { effectsAtBoundary } from './rules/effects-at-boundary.mjs'
-import { fileContract } from './rules/file-contract.mjs'
+import { createRecommendedConfig } from './configs/recommended.config.mjs'
+import { effectsAtBoundary } from './rules/effectsAtBoundary.rule.mjs'
+import { fileContract } from './rules/fileContract.rule.mjs'
 
 const plugin = {
 	meta: { name: '@jst-stack/eslint-plugin', version: '0.1.0' },

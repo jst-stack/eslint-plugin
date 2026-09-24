@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import console from 'node:console'
 import process from 'node:process'
-import { checkArchitecture, checkStyles } from '../src/checks.mjs'
+import { checkArchitecture } from '../src/checks/architecture.check.mjs'
+import { checkStyles } from '../src/checks/styles.check.mjs'
 
 const checks = {
 	architecture: checkArchitecture,

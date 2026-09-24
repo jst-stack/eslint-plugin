@@ -1,4 +1,4 @@
-import { getProjectPath } from '../lib/path.mjs'
+import { getProjectPath } from '../lib/path.lib.mjs'
 
 const effects = new Set(['fetch', 'indexedDB', 'localStorage', 'sessionStorage'])
 
