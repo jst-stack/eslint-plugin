@@ -91,7 +91,7 @@ function validateRoleDirectory({ context, directory, fileName, node, parts, role
 }
 
 function createFilePolicy(overrides) {
-	const files = createPolicy({ files: overrides }).files
+	const files = createPolicy(overrides ? { files: overrides } : {}).files
 	const roles = files.roles.join('|')
 	const testSuffixes = files.testSuffixes.join('|')
 	return {

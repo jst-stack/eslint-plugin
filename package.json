@@ -1,35 +1,48 @@
 {
 	"name": "@jst-stack/eslint-plugin",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Executable architecture and source-quality contracts for JST React applications.",
 	"type": "module",
 	"license": "MIT",
 	"engines": {
-		"node": ">=20.19"
+		"node": ">=24.15.0 <25"
 	},
 	"exports": {
-		".": "./src/index.mjs",
-		"./package.json": "./package.json"
+		".": {
+			"types": "./src/index.d.ts",
+			"import": "./src/index.mjs"
+		},
+		"./package.json": "./package.json",
+		"./schema": "./schema/jst-policy.schema.json"
 	},
 	"bin": {
 		"jst-lint": "./bin/jst-lint.mjs"
 	},
 	"files": [
 		"bin",
+		"docs",
 		"LICENSE",
 		"README.md",
+		"schema",
 		"src"
 	],
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",
 		"test": "node --test",
-		"check": "npm run lint && npm test && npm pack --dry-run"
+		"benchmark": "node scripts/run-benchmarks.mjs",
+		"benchmark:update": "node scripts/run-benchmarks.mjs --write-baseline",
+		"check": "npm run lint && npm test && npm pack --dry-run",
+		"prepublishOnly": "npm run check"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"peerDependencies": {
 		"eslint": "^9.5.0 || ^10.0.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
+		"@typescript-eslint/parser": "^8.56.0",
 		"eslint": "^10.10.0"
 	},
 	"repository": {
@@ -47,5 +60,8 @@
 		"fsd",
 		"jst",
 		"react"
-	]
+	],
+	"dependencies": {
+		"eslint-plugin-import-x": "^4.17.1"
+	}
 }

@@ -1,6 +1,7 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { Linter } from 'eslint'
+import typescriptParser from '@typescript-eslint/parser'
 import plugin from '../src/index.mjs'
 
 const linter = new Linter({ configType: 'flat' })
@@ -29,11 +30,22 @@ test('enforces every layer direction and isolates slices', () => {
 	const layers = Object.keys(allowed)
 	for (const source of layers) {
 		for (const target of layers) {
-			const messages = lint(`import '@/${target}/target/value.lib'`, `src/${source}/source/value.lib.ts`)
+			const targetPath = ['pages', 'widgets', 'features', 'entities'].includes(target) && source !== target
+				? `@/${target}/target/target.public`
+				: `@/${target}/target/value.lib`
+			const messages = lint(`import '${targetPath}'`, `src/${source}/source/value.lib.ts`)
 			const shouldAllow = allowed[source].includes(target) && (source !== target || ['app', 'shared'].includes(source))
 			assert.equal(errors(messages).length === 0, shouldAllow, `${source} → ${target}`)
 		}
 	}
+})
+
+test('requires public slice APIs for cross-layer consumers', () => {
+	assert.match(
+		text(lint("import { Order } from '@/entities/order/model/order.model'", 'src/features/checkout/checkout.entry.tsx')),
+		/entities\/order through its order\.public public API/u,
+	)
+	assert.equal(errors(lint("import { Order } from '@/entities/order/order.public'", 'src/features/checkout/checkout.entry.tsx')).length, 0)
 })
 
 test('enforces filenames and every structural role with actionable errors', () => {
@@ -75,10 +87,25 @@ test('keeps network, persistence, and browser effects behind adapters', () => {
 	assert.equal(errors(lint("import axios from 'axios'; export const load = () => axios.get('/orders')", 'src/entities/order/repository/orders.repository.ts')).length, 0)
 })
 
+test('does not confuse shadowed names or package prefixes with effects', () => {
+	const localEffects = 'export function run(fetch, WebSocket, localStorage) { fetch(); new WebSocket(); return localStorage.get() }'
+	assert.equal(errors(lint(localEffects, 'src/entities/order/model/order.model.ts')).length, 0)
+	assert.equal(errors(lint("import client from 'axios-retry'", 'src/entities/order/model/order.model.ts')).length, 0)
+	assert.equal(errors(lint("import { atom } from '@reatomized/core'", 'src/entities/order/model/order.model.ts')).length, 0)
+})
+
 test('keeps models and services independent from state managers', () => {
 	assert.match(text(lint("import { atom } from '@reatom/core'", 'src/entities/order/model/order.model.ts')), /Models, services, repositories, and views stay state-manager agnostic/u)
 	assert.equal(errors(lint("import { atom } from '@reatom/core'; export const orders = atom([])", 'src/entities/order/orders.store.ts')).length, 0)
 	assert.equal(errors(lint("import { reatomComponent } from '@reatom/react'", 'src/features/orders/orders.entry.tsx')).length, 0)
+})
+
+test('restricts imported service locators to composition roots', () => {
+	assert.match(
+		text(lint("import { useService as resolveService } from '@/shared/di/serviceLocator.context'", 'src/features/orders/orders.entry.tsx')),
+		/useService is restricted to app\/pages/u,
+	)
+	assert.equal(errors(lint("import { useService } from '@/shared/di/serviceLocator.context'", 'src/pages/orders/orders.page.tsx')).length, 0)
 })
 
 test('rejects the five previously missed architecture violations', () => {
@@ -105,8 +132,28 @@ test('moves view calculations out while allowing render mapping', () => {
 	assert.equal(errors(lint('export function List({ items }) { return items.map(item => item.name) }', 'src/features/orders/ui/list.component.tsx')).length, 0)
 })
 
+test('rejects inline JST disables and requires reasons for other suppressions', () => {
+	assert.match(text(lint('// eslint-disable-next-line jst/import-contract\nexport const value = 1', 'src/shared/lib/value.lib.ts')), /Do not disable JST rules inline/u)
+	assert.match(text(lint('// eslint-disable-next-line no-console\nconsole.log(1)', 'src/shared/lib/value.lib.ts')), /Add a -- description/u)
+	assert.doesNotMatch(text(lint('// eslint-disable-next-line no-console -- migration compatibility\nconsole.log(1)', 'src/shared/lib/value.lib.ts')), /Add a -- description/u)
+})
+
+test('checks typed component props without flagging unrelated domain types', () => {
+	const invalid = 'interface ButtonProps { primary: boolean; danger: boolean }\nexport function Button(props: ButtonProps) { return null }'
+	const unrelated = 'interface FeatureFlags { primary: boolean; danger: boolean }\nexport function Button() { return null }'
+	assert.match(text(lintTypescript(invalid, 'src/shared/ui/button.component.tsx')), /Replace boolean variant props/u)
+	assert.doesNotMatch(text(lintTypescript(unrelated, 'src/shared/ui/button.component.tsx')), /Replace boolean variant props/u)
+})
+
 function lint(code, filename) {
 	return linter.verify(code, config, { filename })
+}
+
+function lintTypescript(code, filename) {
+	return linter.verify(code, [{
+		...config[0],
+		languageOptions: { ...config[0].languageOptions, parser: typescriptParser },
+	}], { filename })
 }
 
 function errors(messages) {

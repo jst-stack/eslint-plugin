@@ -1,0 +1,25 @@
+{
+  "tolerance": 0.2,
+  "results": {
+    "architectureCold": {
+      "cpuMs": 2.699,
+      "peakMemoryBytes": 69304320,
+      "wallMs": 1.6201250000000016
+    },
+    "architectureCached": {
+      "cpuMs": 2.901,
+      "peakMemoryBytes": 69189632,
+      "wallMs": 1.7747909999999933
+    },
+    "eslintCold": {
+      "cpuMs": 2513.892,
+      "peakMemoryBytes": 291471360,
+      "wallMs": 1877.552792
+    },
+    "eslintCached": {
+      "cpuMs": 365.965,
+      "peakMemoryBytes": 127303680,
+      "wallMs": 242.876542
+    }
+  }
+}

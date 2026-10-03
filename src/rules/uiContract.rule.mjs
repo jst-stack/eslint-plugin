@@ -1,4 +1,5 @@
 import { createPolicy } from '../configs/defaultPolicy.config.mjs'
+import { matchesPackage } from '../lib/packageName.lib.mjs'
 import { getProjectPath } from '../lib/path.lib.mjs'
 
 export const uiContract = {
@@ -19,12 +20,12 @@ export const uiContract = {
 		if (!/\/ui\/.*\.component\.[jt]sx$/u.test(path)) {
 			return {}
 		}
-		const typedFlags = []
 		return {
 			ArrowFunctionExpression: node => validateFunction(context, node, policy),
 			CallExpression(node) {
 				if (node.callee.type === 'MemberExpression' && node.callee.property.type === 'Identifier'
-					&& policy.calculationMethods.has(node.callee.property.name)) {
+					&& policy.calculationMethods.has(node.callee.property.name)
+					&& isArrayCalculation(context, node.callee.object)) {
 					context.report({ messageId: 'calculation', node })
 				}
 			},
@@ -32,23 +33,43 @@ export const uiContract = {
 			FunctionExpression: node => validateFunction(context, node, policy),
 			ImportDeclaration(node) {
 				const name = node.source.value
-				if (typeof name === 'string' && policy.statePackages.some(packageName => name === packageName || name.startsWith(packageName))) {
+				if (typeof name === 'string' && matchesPackage(name, policy.statePackages)) {
 					context.report({ data: { name }, messageId: 'stateImport', node })
 				}
 			},
-			'Program:exit'() {
-				if (typedFlags.length > 1) {
-					context.report({ data: { names: typedFlags.map(flag => flag.name).join(', ') }, messageId: 'flagProps', node: typedFlags[0].node })
-				}
+			TSInterfaceDeclaration(node) {
+				validateTypedProps(context, node.id.name, node.body.body, policy)
 			},
-			'*:exit'(node) {
-				if (node.type === 'TSPropertySignature' && node.key.type === 'Identifier' && policy.booleanVariantNames.has(node.key.name)
-					&& node.typeAnnotation?.typeAnnotation.type === 'TSBooleanKeyword') {
-					typedFlags.push({ name: node.key.name, node })
+			TSTypeAliasDeclaration(node) {
+				if (node.typeAnnotation.type === 'TSTypeLiteral') {
+					validateTypedProps(context, node.id.name, node.typeAnnotation.members, policy)
 				}
 			},
 		}
 	},
+}
+
+function isArrayCalculation(context, node) {
+	const services = context.sourceCode.parserServices
+	if (!services?.program || !services.esTreeNodeToTSNodeMap) {
+		return true
+	}
+	const checker = services.program.getTypeChecker()
+	const type = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(node))
+	return checker.isArrayType(type) || checker.isTupleType(type)
+}
+
+function validateTypedProps(context, typeName, members, policy) {
+	if (!typeName.endsWith('Props')) {
+		return
+	}
+	const flags = members.filter(member => member.type === 'TSPropertySignature'
+		&& member.key.type === 'Identifier'
+		&& member.typeAnnotation?.typeAnnotation.type === 'TSBooleanKeyword'
+		&& policy.booleanVariantNames.has(member.key.name))
+	if (flags.length > 1) {
+		context.report({ data: { names: flags.map(flag => flag.key.name).join(', ') }, messageId: 'flagProps', node: flags[0] })
+	}
 }
 
 function validateFunction(context, node, policy) {
@@ -68,7 +89,7 @@ function validateFunction(context, node, policy) {
 }
 
 function createUiPolicy(overrides) {
-	const ui = createPolicy({ ui: overrides }).ui
+	const ui = createPolicy(overrides ? { ui: overrides } : {}).ui
 	return {
 		...ui,
 		booleanVariantNames: new Set(ui.booleanVariantNames),

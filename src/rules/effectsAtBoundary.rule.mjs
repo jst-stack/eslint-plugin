@@ -1,4 +1,5 @@
 import { createPolicy } from '../configs/defaultPolicy.config.mjs'
+import { matchesPackage } from '../lib/packageName.lib.mjs'
 import { getProjectPath } from '../lib/path.lib.mjs'
 
 export const effectsAtBoundary = {
@@ -17,13 +18,14 @@ export const effectsAtBoundary = {
 			return {}
 		}
 		const report = (node, effect) => context.report({ data: { effect }, messageId: 'effect', node })
+		const isGlobal = node => isUnshadowed(context, node)
 
 		return {
 			CallExpression(node) {
-				if (node.callee.type === 'Identifier' && node.callee.name === 'fetch') {
+				if (node.callee.type === 'Identifier' && node.callee.name === 'fetch' && isGlobal(node.callee)) {
 					report(node, 'fetch')
 				}
-				if (isMember(node.callee, 'navigator', 'sendBeacon')) {
+				if (isMember(node.callee, 'navigator', 'sendBeacon') && isGlobal(node.callee.object)) {
 					report(node, 'navigator.sendBeacon')
 				}
 			},
@@ -34,19 +36,19 @@ export const effectsAtBoundary = {
 				reportEffectPackage(node, node.source.value, report, policy)
 			},
 			MemberExpression(node) {
-				if (node.object.type === 'Identifier' && policy.globals.has(node.object.name)) {
+				if (node.object.type === 'Identifier' && policy.globals.has(node.object.name) && isGlobal(node.object)) {
 					report(node, node.object.name)
 				}
-				if (node.object.type === 'Identifier' && ['globalThis', 'window'].includes(node.object.name)
+				if (node.object.type === 'Identifier' && ['globalThis', 'window'].includes(node.object.name) && isGlobal(node.object)
 					&& node.property.type === 'Identifier' && policy.globals.has(node.property.name)) {
 					report(node, node.property.name)
 				}
-				if (isMember(node, 'document', 'cookie')) {
+				if (isMember(node, 'document', 'cookie') && isGlobal(node.object)) {
 					report(node, 'document.cookie')
 				}
 			},
 			NewExpression(node) {
-				if (node.callee.type === 'Identifier' && policy.constructors.has(node.callee.name)) {
+				if (node.callee.type === 'Identifier' && policy.constructors.has(node.callee.name) && isGlobal(node.callee)) {
 					report(node, node.callee.name)
 				}
 			},
@@ -66,13 +68,25 @@ function isMember(node, object, property) {
 }
 
 function reportEffectPackage(node, name, report, policy) {
-	if (typeof name === 'string' && policy.packages.some(packageName => name === packageName || name.startsWith(packageName))) {
+	if (typeof name === 'string' && matchesPackage(name, policy.packages)) {
 		report(node, name)
 	}
 }
 
+function isUnshadowed(context, node) {
+	let scope = context.sourceCode.getScope(node)
+	while (scope) {
+		const variable = scope.set.get(node.name)
+		if (variable) {
+			return variable.defs.length === 0
+		}
+		scope = scope.upper
+	}
+	return true
+}
+
 function createEffectPolicy(overrides) {
-	const effects = createPolicy({ effects: overrides }).effects
+	const effects = createPolicy(overrides ? { effects: overrides } : {}).effects
 	return {
 		...effects,
 		constructors: new Set(effects.constructors),

@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jst-stack.dev/schemas/jst-policy.schema.json",
+  "title": "JST project policy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "architecture": {
+      "$ref": "#/$defs/architecture"
+    },
+    "effects": {
+      "$ref": "#/$defs/effects"
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/exception"
+      }
+    },
+    "files": {
+      "$ref": "#/$defs/files"
+    },
+    "imports": {
+      "$ref": "#/$defs/imports"
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    },
+    "performance": {
+      "$ref": "#/$defs/performance"
+    },
+    "styles": {
+      "$ref": "#/$defs/styles"
+    },
+    "ui": {
+      "$ref": "#/$defs/ui"
+    }
+  },
+  "$defs": {
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "containerFiles": { "$ref": "#/$defs/stringArray" },
+        "providerGlobs": { "$ref": "#/$defs/stringArray" },
+        "requiredDependencies": { "$ref": "#/$defs/stringArray" },
+        "serviceLocatorOwners": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "constructors": { "$ref": "#/$defs/stringArray" },
+        "globals": { "$ref": "#/$defs/stringArray" },
+        "packages": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files", "reason", "rules"],
+      "properties": {
+        "expires": { "type": "string", "format": "date" },
+        "files": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "owner": { "type": "string" },
+        "reason": { "type": "string", "minLength": 1 },
+        "rules": { "$ref": "#/$defs/nonEmptyStringArray" }
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "frameworkFiles": { "$ref": "#/$defs/stringArray" },
+        "roleDirectories": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "null"] }
+        },
+        "roles": { "$ref": "#/$defs/stringArray" },
+        "sliceDirectories": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/stringArray" }
+        },
+        "testSuffixes": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "imports": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "alias": { "type": "string", "minLength": 1 },
+        "layers": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/stringArray" }
+        },
+        "publicApiSuffix": { "type": "string", "minLength": 1 },
+        "slicedLayers": { "$ref": "#/$defs/stringArray" },
+        "statePackages": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "complexity": { "$ref": "#/$defs/positiveInteger" },
+        "maxDepth": { "$ref": "#/$defs/positiveInteger" },
+        "maxLines": { "$ref": "#/$defs/positiveInteger" },
+        "maxLinesPerFunction": { "$ref": "#/$defs/positiveInteger" },
+        "maxParams": { "$ref": "#/$defs/positiveInteger" }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "budgets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "gzipCssBytes": { "$ref": "#/$defs/positiveInteger" },
+            "gzipJavaScriptBytes": { "$ref": "#/$defs/positiveInteger" },
+            "unexpectedChunks": { "$ref": "#/$defs/stringArray" }
+          }
+        }
+      }
+    },
+    "styles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "globalFiles": { "$ref": "#/$defs/stringArray" },
+        "moduleExtension": { "enum": ["css", "scss"] }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "booleanVariantNames": { "$ref": "#/$defs/stringArray" },
+        "calculationMethods": { "$ref": "#/$defs/stringArray" },
+        "forbiddenImportPatterns": { "$ref": "#/$defs/stringArray" },
+        "statePackages": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}
