@@ -200,6 +200,8 @@ The same section exposes:
 | --- | --- | --- |
 | `files` | `frameworkFiles`, `roles`, `testSuffixes` | Arrays replace defaults |
 | `files` | `roleDirectories`, `sliceDirectories` | Objects merge by key |
+| `generator` | `layers` | Maps CLI slice kinds to policy layer directories; object merges by key |
+| `generator` | `testDirectory` | Replaces the generated test directory |
 | `imports` | `alias`, `slicedLayers`, `statePackages` | Values and arrays replace defaults |
 | `imports` | `layers` | Object merges by layer key |
 | `effects` | `packages`, `globals`, `constructors` | Arrays replace defaults |

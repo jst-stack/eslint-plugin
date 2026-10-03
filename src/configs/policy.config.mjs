@@ -27,6 +27,10 @@ const defaults = {
 		},
 		testSuffixes: ['test'],
 	},
+	generator: {
+		layers: { entity: 'entities', feature: 'features', widget: 'widgets' },
+		testDirectory: '__tests__',
+	},
 	imports: {
 		alias: '@/',
 		layers: {
@@ -54,7 +58,7 @@ const defaults = {
 	},
 }
 
-const recordPaths = new Set(['files.roleDirectories', 'files.sliceDirectories', 'imports.layers'])
+const recordPaths = new Set(['files.roleDirectories', 'files.sliceDirectories', 'generator.layers', 'imports.layers'])
 
 export function normalizePolicy(overrides) {
 	assertPlainObject(overrides, 'policy')
@@ -79,7 +83,7 @@ function validateOverrides(value, shape, path = '') {
 }
 
 function validateRecordEntry(value, recordPath, path) {
-	if (recordPath === 'files.roleDirectories') {
+	if (recordPath === 'files.roleDirectories' || recordPath === 'generator.layers') {
 		if (value !== null && typeof value !== 'string') {
 			throw new TypeError(`${path} must be a string or null.`)
 		}
@@ -102,6 +106,11 @@ function validatePolicy(policy) {
 	}
 	validateExceptionExpiry(policy.exceptions)
 	const layers = new Set(Object.keys(policy.imports.layers))
+	for (const layer of Object.values(policy.generator.layers)) {
+		if (!layers.has(layer)) {
+			throw new TypeError(`generator.layers contains unknown layer: ${layer}`)
+		}
+	}
 	for (const layer of policy.imports.slicedLayers) {
 		if (!layers.has(layer)) {
 			throw new TypeError(`imports.slicedLayers contains unknown layer: ${layer}`)

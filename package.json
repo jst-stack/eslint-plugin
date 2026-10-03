@@ -1,6 +1,6 @@
 {
 	"name": "@jst-stack/eslint-plugin",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"description": "Executable architecture and source-quality contracts for JST React applications.",
 	"type": "module",
 	"license": "MIT",

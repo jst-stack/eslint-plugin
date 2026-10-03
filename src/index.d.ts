@@ -28,6 +28,10 @@ export interface JstPolicy {
 		sliceDirectories: Readonly<Record<string, readonly string[]>>
 		testSuffixes: readonly string[]
 	}
+	generator: {
+		layers: Readonly<Record<string, string>>
+		testDirectory: string
+	}
 	imports: {
 		alias: string
 		layers: Readonly<Record<string, readonly string[]>>
