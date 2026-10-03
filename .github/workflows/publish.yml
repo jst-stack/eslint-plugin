@@ -27,5 +27,8 @@ jobs:
       - run: npm ci
       - run: npm run check
       - name: Verify tag matches package version
-        run: node --input-type=module --eval "import manifest from './package.json' with { type: 'json' }; if (process.env.GITHUB_REF_NAME !== 'v' + manifest.version) process.exit(1)"
+        run: >-
+          node --input-type=module --eval
+          "import manifest from './package.json' with { type: 'json' };
+          if (process.env.GITHUB_REF_NAME !== 'v' + manifest.version) process.exit(1)"
       - run: npm publish --provenance --access public
