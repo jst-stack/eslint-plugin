@@ -1,6 +1,6 @@
 {
 	"name": "@jst-stack/eslint-plugin",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Executable architecture and source-quality contracts for JST React applications.",
 	"type": "module",
 	"license": "MIT",
@@ -16,7 +16,7 @@
 		"./schema": "./schema/jst-policy.schema.json"
 	},
 	"bin": {
-		"jst-lint": "./bin/jst-lint.mjs"
+		"jst-lint": "bin/jst-lint.mjs"
 	},
 	"files": [
 		"bin",

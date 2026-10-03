@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Preserve the `jst-lint` executable in npm 12 package metadata.
+
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
 ## Unreleased
