@@ -1,12 +1,20 @@
 # Changelog
 
-## 0.3.1
-
-- Preserve the `jst-lint` executable in npm 12 package metadata.
-
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
 ## Unreleased
+
+## 0.3.3
+
+- Keep the npm lockfile valid for clean installs with both npm 11 and npm 12 on Node 24.
+
+## 0.3.2
+
+- Expose generator layer and test-directory conventions through the shared normalized policy.
+
+## 0.3.1
+
+- Preserve the `jst-lint` executable in npm 12 package metadata.
 
 ## 0.3.0 - 2026-09-24
 
