@@ -11,4 +11,4 @@ import { Order } from '@/entities/order/model/order.model'
 import { CheckoutPage } from '@/pages/checkout/checkout.public'
 ```
 
-Configure `imports` in `jst.config.ts`. Tests are excluded from production direction checks.
+Configure `imports` in `jst.config.ts`. The same boundaries apply to tests: a test may use private files from its own slice, but cross-slice fixtures and doubles must come through a public API or be owned locally by the consumer.

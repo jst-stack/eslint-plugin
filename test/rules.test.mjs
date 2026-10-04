@@ -48,6 +48,18 @@ test('requires public slice APIs for cross-layer consumers', () => {
 	assert.equal(errors(lint("import { Order } from '@/entities/order/order.public'", 'src/features/checkout/checkout.entry.tsx')).length, 0)
 })
 
+test('enforces public APIs and slice isolation in tests', () => {
+	assert.match(
+		text(lint("import { stub } from '@/entities/order/__tests__/orderGatewayStub.lib'", 'src/features/queue/__tests__/queue.store.test.ts')),
+		/entities\/order through its order\.public public API/u,
+	)
+	assert.match(
+		text(lint("import { fixture } from '@/features/cart/__tests__/cart.fixture'", 'src/features/checkout/__tests__/checkout.test.ts')),
+		/Do not import directly across features slices/u,
+	)
+	assert.equal(errors(lint("import { helper } from '../model/order.model'", 'src/entities/order/__tests__/order.test.ts')).length, 0)
+})
+
 test('enforces filenames and every structural role with actionable errors', () => {
 	const cases = [
 		['src/entities/order/ui/BadName.ts', /Rename "BadName\.ts"/u],

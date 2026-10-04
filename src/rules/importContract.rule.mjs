@@ -20,7 +20,7 @@ export const importContract = {
 		const policy = createImportPolicy(context.options[0])
 		const sourcePath = getProjectPath(context.filename)
 		const source = getUnit(sourcePath, policy)
-		if (!source || isTest(sourcePath)) {
+		if (!source) {
 			return {}
 		}
 		return {
@@ -131,8 +131,4 @@ function createImportPolicy(overrides) {
 		serviceLocatorOwners: new Set(policy.architecture.serviceLocatorOwners),
 		slicedLayers: new Set(imports.slicedLayers),
 	}
-}
-
-function isTest(path) {
-	return /(?:\/__tests__\/|\.(?:test|spec)\.)/u.test(path)
 }
