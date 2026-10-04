@@ -58,6 +58,7 @@ test('enforces public APIs and slice isolation in tests', () => {
 		/Do not import directly across features slices/u,
 	)
 	assert.equal(errors(lint("import { helper } from '../model/order.model'", 'src/entities/order/__tests__/order.test.ts')).length, 0)
+	assert.equal(errors(lint("import { createCtx } from '@reatom/core'", 'src/features/queue/__tests__/queue.store.test.ts')).length, 0)
 })
 
 test('enforces filenames and every structural role with actionable errors', () => {

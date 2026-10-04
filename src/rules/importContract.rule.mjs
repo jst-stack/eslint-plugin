@@ -20,22 +20,23 @@ export const importContract = {
 		const policy = createImportPolicy(context.options[0])
 		const sourcePath = getProjectPath(context.filename)
 		const source = getUnit(sourcePath, policy)
+		const sourceIsTest = isTest(sourcePath)
 		if (!source) {
 			return {}
 		}
 		return {
 			ExportAllDeclaration(node) {
-				validateImport(context, node, { policy, source, sourcePath })
+				validateImport(context, node, { policy, source, sourceIsTest, sourcePath })
 			},
 			ExportNamedDeclaration(node) {
-				validateImport(context, node, { policy, source, sourcePath })
+				validateImport(context, node, { policy, source, sourceIsTest, sourcePath })
 			},
 			ImportDeclaration(node) {
 				validateServiceLocator(context, node, source, policy)
-				validateImport(context, node, { policy, source, sourcePath })
+				validateImport(context, node, { policy, source, sourceIsTest, sourcePath })
 			},
 			ImportExpression(node) {
-				validateImport(context, node, { policy, source, sourcePath })
+				validateImport(context, node, { policy, source, sourceIsTest, sourcePath })
 			},
 		}
 	},
@@ -53,12 +54,12 @@ function validateServiceLocator(context, node, source, policy) {
 	}
 }
 
-function validateImport(context, node, { policy, source, sourcePath }) {
+function validateImport(context, node, { policy, source, sourceIsTest, sourcePath }) {
 	const specifier = node.source?.value
 	if (typeof specifier !== 'string') {
 		return
 	}
-	if (isStatePackage(specifier, policy) && !isStateOwner(sourcePath, source.layer)) {
+	if (!sourceIsTest && isStatePackage(specifier, policy) && !isStateOwner(sourcePath, source.layer)) {
 		context.report({ data: { name: specifier }, messageId: 'state', node })
 	}
 	const targetPath = resolveSourceImport(sourcePath, specifier, policy)
@@ -119,6 +120,10 @@ function getUnit(path, policy) {
 	}
 	const [, layer, slice] = path.split('/')
 	return policy.layers.includes(layer) ? { layer, slice } : undefined
+}
+
+function isTest(path) {
+	return /(?:\/__tests__\/|\.(?:test|spec)\.)/u.test(path)
 }
 
 function createImportPolicy(overrides) {
