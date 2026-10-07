@@ -4,6 +4,10 @@ Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
 ## Unreleased
 
+## 0.4.1
+
+- Make tag publishing idempotent when a release was already published from a maintainer workstation.
+
 ## 0.4.0
 
 - Add bounded-context modules to the default dependency topology.
