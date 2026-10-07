@@ -42,8 +42,9 @@ Editors and external tooling can consume the published JSON Schema from `@jst-st
 
 The preset enforces:
 
-- the exact `app → pages → widgets → features → entities → shared` dependency matrix;
+- the exact `app → pages → modules → widgets → features → entities → shared` dependency matrix;
 - isolation between sibling production slices;
+- bounded-context public APIs plus workspace package exports, ADRs, declared dependencies, and cycle freedom;
 - `<lowerCamelName>.<role>.<extension>` filenames and role placement;
 - network, browser, persistence, and state-manager boundaries;
 - props-driven UI without async orchestration, aggregation, or flag-prop combinations;
@@ -206,10 +207,12 @@ The same section exposes:
 | `imports` | `layers` | Object merges by layer key |
 | `effects` | `packages`, `globals`, `constructors` | Arrays replace defaults |
 | `architecture` | `containerFiles`, `providerGlobs`, `requiredDependencies`, `serviceLocatorOwners` | Arrays replace defaults |
+| `architecture` | `packageRoots`, `requiredDecisionHeadings` | Arrays replace defaults |
+| `architecture` | `decisionDirectory` | Replaces the default |
 | `styles` | `globalFiles`, `moduleExtension` | Arrays/values replace defaults |
 | root | `exceptions` | Array replaces defaults |
 | `ui` | `statePackages`, `booleanVariantNames`, `calculationMethods`, `forbiddenImportPatterns` | Arrays replace defaults |
-| `limits` | `complexity`, `maxDepth`, `maxLines`, `maxLinesPerFunction`, `maxParams` | Object merges by key |
+| `limits` | `complexity`, `maxDepth`, `maxLines`, `maxLinesPerFunction`, `maxParams`, `maxPublicApiExports` | Object merges by key |
 | `performance.budgets` | `gzipCssBytes`, `gzipJavaScriptBytes`, `unexpectedChunks` | Object merges by key; arrays replace defaults |
 
 Use `jst.defaultPolicy` when you want to append to an array rather than replace it.
@@ -263,6 +266,20 @@ Add cross-file architecture and stylesheet ownership checks alongside ESLint:
 ```
 
 Use `*.adapter.ts` for browser and HTTP adapters. React Router reserves `*.client.*` for client-only modules, so it is intentionally not a default JST role.
+
+### Bounded contexts and packages
+
+The optional `modules` layer is a coarse product boundary, not another name for a one-button feature. A module may keep internal pages, model, services, repository, and UI together, but consumers import only `<module>.public.ts`. Its public API export count is bounded by `limits.maxPublicApiExports`.
+
+When `architecture.packageRoots` contains workspace packages, `jst-lint architecture` also requires:
+
+- root workspace registration;
+- one explicit `.` export and no wildcard deep exports;
+- no imports through another package's `src`;
+- declared internal dependencies and an acyclic workspace graph;
+- an extraction ADR under `architecture.decisionDirectory` with every `requiredDecisionHeadings` section.
+
+A package with `jst.kind: "microfrontend"` must additionally declare `jst.owner`, `jst.hostContract`, `jst.fallback`, and independent `build`/`test` scripts. The plugin deliberately does not prescribe Module Federation or another runtime mechanism.
 
 ## Policy migrations
 

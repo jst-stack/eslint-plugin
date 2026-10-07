@@ -7,7 +7,7 @@ export const importContract = {
 	meta: {
 		docs: { description: 'Enforce exact layer direction and slice isolation.', recommended: true },
 		messages: {
-			layer: '{{source}} cannot depend on {{target}}. Dependencies point app → pages → widgets → features → entities → shared.',
+			layer: '{{source}} cannot depend on {{target}}. Dependencies point app → pages → modules → widgets → features → entities → shared.',
 			publicApi: 'Import {{layer}}/{{slice}} through its {{slice}}{{suffix}} public API instead of deep-importing private implementation.',
 			serviceLocator: 'useService is restricted to app/pages composition roots. Inject a narrow dependency into lower layers.',
 			slice: 'Do not import directly across {{layer}} slices ({{source}} → {{target}}). Compose them in a higher layer or inject a narrow port.',

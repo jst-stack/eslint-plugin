@@ -11,7 +11,10 @@ export interface JstPolicyException {
 export interface JstPolicy {
 	architecture: {
 		containerFiles: readonly string[]
+		decisionDirectory: string
+		packageRoots: readonly string[]
 		providerGlobs: readonly string[]
+		requiredDecisionHeadings: readonly string[]
 		requiredDependencies: readonly string[]
 		serviceLocatorOwners: readonly string[]
 	}
@@ -45,6 +48,7 @@ export interface JstPolicy {
 		maxLines: number
 		maxLinesPerFunction: number
 		maxParams: number
+		maxPublicApiExports: number
 	}
 	performance: {
 		budgets: {

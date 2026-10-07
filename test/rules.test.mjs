@@ -18,8 +18,9 @@ const config = [{
 
 test('enforces every layer direction and isolates slices', () => {
 	const allowed = {
-		app: ['app', 'pages', 'widgets', 'features', 'entities', 'shared'],
-		pages: ['pages', 'widgets', 'features', 'entities', 'shared'],
+		app: ['app', 'pages', 'modules', 'widgets', 'features', 'entities', 'shared'],
+		pages: ['pages', 'modules', 'widgets', 'features', 'entities', 'shared'],
+		modules: ['modules', 'widgets', 'features', 'entities', 'shared'],
 		widgets: ['widgets', 'features', 'entities', 'shared'],
 		features: ['features', 'entities', 'shared'],
 		entities: ['entities', 'shared'],
@@ -30,7 +31,7 @@ test('enforces every layer direction and isolates slices', () => {
 	const layers = Object.keys(allowed)
 	for (const source of layers) {
 		for (const target of layers) {
-			const targetPath = ['pages', 'widgets', 'features', 'entities'].includes(target) && source !== target
+			const targetPath = ['pages', 'modules', 'widgets', 'features', 'entities'].includes(target) && source !== target
 				? `@/${target}/target/target.public`
 				: `@/${target}/target/value.lib`
 			const messages = lint(`import '${targetPath}'`, `src/${source}/source/value.lib.ts`)
@@ -38,6 +39,15 @@ test('enforces every layer direction and isolates slices', () => {
 			assert.equal(errors(messages).length === 0, shouldAllow, `${source} → ${target}`)
 		}
 	}
+})
+
+test('treats bounded-context modules as cohesive slices', () => {
+	assert.equal(errors(lint("import { value } from './model/value.model'", 'src/modules/orders/orders.entry.tsx')).length, 0)
+	assert.match(
+		text(lint("import { value } from '@/modules/payments/model/value.model'", 'src/modules/orders/orders.entry.tsx')),
+		/Do not import directly across modules slices/u,
+	)
+	assert.equal(errors(lint("import { payments } from '@/modules/payments/payments.public'", 'src/pages/home/home.page.tsx')).length, 0)
 })
 
 test('requires public slice APIs for cross-layer consumers', () => {

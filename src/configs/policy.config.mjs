@@ -1,7 +1,10 @@
 const defaults = {
 	architecture: {
 		containerFiles: ['src/app/container/container.composition.ts', 'src/app/container/container.ts'],
-		providerGlobs: ['../../entities/**/*.provider.ts', '../../features/**/*.provider.ts', '../../shared/**/*.provider.ts'],
+		decisionDirectory: 'docs/decisions',
+		packageRoots: ['packages'],
+		providerGlobs: ['../../entities/**/*.provider.ts', '../../features/**/*.provider.ts', '../../modules/**/*.provider.ts', '../../shared/**/*.provider.ts'],
+		requiredDecisionHeadings: ['Context', 'Decision', 'Consequences', 'Revisit when', 'Rollback'],
 		requiredDependencies: ['@needle-di/core'],
 		serviceLocatorOwners: ['app', 'pages'],
 	},
@@ -23,29 +26,31 @@ const defaults = {
 		sliceDirectories: {
 			entities: ['__tests__', 'lib', 'model', 'repository', 'services', 'ui'],
 			features: ['__tests__', 'lib', 'model', 'ui'],
+			modules: ['__tests__', 'lib', 'model', 'pages', 'repository', 'services', 'ui'],
 			widgets: ['__tests__', 'lib', 'model', 'ui'],
 		},
 		testSuffixes: ['test'],
 	},
 	generator: {
-		layers: { entity: 'entities', feature: 'features', widget: 'widgets' },
+		layers: { entity: 'entities', feature: 'features', module: 'modules', widget: 'widgets' },
 		testDirectory: '__tests__',
 	},
 	imports: {
 		alias: '@/',
 		layers: {
-			app: ['app', 'pages', 'widgets', 'features', 'entities', 'shared'],
-			pages: ['pages', 'widgets', 'features', 'entities', 'shared'],
+			app: ['app', 'pages', 'modules', 'widgets', 'features', 'entities', 'shared'],
+			pages: ['pages', 'modules', 'widgets', 'features', 'entities', 'shared'],
+			modules: ['modules', 'widgets', 'features', 'entities', 'shared'],
 			widgets: ['widgets', 'features', 'entities', 'shared'],
 			features: ['features', 'entities', 'shared'],
 			entities: ['entities', 'shared'],
 			shared: ['shared'],
 		},
-		slicedLayers: ['pages', 'widgets', 'features', 'entities'],
+		slicedLayers: ['pages', 'modules', 'widgets', 'features', 'entities'],
 		publicApiSuffix: '.public',
 		statePackages: ['@reatom/', '@reduxjs/', '@tanstack/react-query', 'effector', 'jotai', 'mobx', 'redux', 'zustand'],
 	},
-	limits: { complexity: 12, maxDepth: 3, maxLines: 250, maxLinesPerFunction: 80, maxParams: 4 },
+	limits: { complexity: 12, maxDepth: 3, maxLines: 250, maxLinesPerFunction: 80, maxParams: 4, maxPublicApiExports: 30 },
 	performance: {
 		budgets: { gzipCssBytes: 50_000, gzipJavaScriptBytes: 250_000, unexpectedChunks: [] },
 	},

@@ -4,6 +4,13 @@ Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
 ## Unreleased
 
+## 0.4.0
+
+- Add bounded-context modules to the default dependency topology.
+- Validate workspace public entries, extraction ADRs, declared internal dependencies, and package cycles.
+- Require explicit ownership, host, fallback, build, and test contracts for microfrontend packages.
+- Add configurable package roots, decision contracts, and bounded-context public API budgets.
+
 ## 0.3.3
 
 - Keep the npm lockfile valid for clean installs with both npm 11 and npm 12 on Node 24.
