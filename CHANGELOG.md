@@ -4,6 +4,10 @@ Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
 ## Unreleased
 
+## 0.4.2
+
+- Read release identity from the package manifest before checking the npm registry.
+
 ## 0.4.1
 
 - Make tag publishing idempotent when a release was already published from a maintainer workstation.
