@@ -2,7 +2,10 @@
 
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
-## Unreleased
+## 0.4.4
+
+- Reject class instances and other non-plain objects at the policy trust boundary.
+- Add deterministic adversarial coverage for unknown policy keys, invalid shapes, generated limits, and deep immutability.
 
 ## 0.4.3
 

@@ -71,3 +71,24 @@ test('publishes an exact top-level schema for every policy section', () => {
 		}
 	}
 })
+
+test('rejects adversarial policy shapes without mutating defaults', () => {
+	const invalidValues = [null, [], '', 0, false, new Date(0)]
+	for (const value of invalidValues) {
+		assert.throws(() => defineConfig(value), /policy must be an object/u)
+	}
+	for (let index = 0; index < 256; index += 1) {
+		const key = `unknown_${index.toString(36)}`
+		assert.throws(() => defineConfig({ [key]: index }), new RegExp(`Unknown JST policy key: ${key}`, 'u'))
+	}
+	assert.equal(plugin.defaultPolicy.limits.maxLines, 250)
+})
+
+test('preserves valid generated limit policies and freezes every result', () => {
+	for (let index = 1; index <= 256; index += 1) {
+		const policy = defineConfig({ limits: { maxLines: index } })
+		assert.equal(policy.limits.maxLines, index)
+		assert.equal(Object.isFrozen(policy), true)
+		assert.equal(Object.isFrozen(policy.limits), true)
+	}
+})
