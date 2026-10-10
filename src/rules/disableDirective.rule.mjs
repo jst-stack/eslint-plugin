@@ -1,6 +1,10 @@
 export const disableDirective = {
 	meta: {
-		docs: { description: 'Require reviewed policy exceptions instead of inline JST rule disables.', recommended: true },
+		docs: {
+			description: 'Require reviewed policy exceptions instead of inline JST rule disables.',
+			recommended: true,
+			url: 'https://github.com/jst-stack/eslint-plugin/blob/main/docs/rules/disable-directive.md',
+		},
 		messages: {
 			description: 'Add a -- description to this ESLint suppression.',
 			jstRule: 'Do not disable JST rules inline. Add a narrow reviewed exception to jst.config.ts.',

@@ -3,7 +3,11 @@ import { createPolicy } from '../configs/defaultPolicy.config.mjs'
 
 export const fileContract = {
 	meta: {
-		docs: { description: 'Enforce JST file roles and slice structure.', recommended: true },
+		docs: {
+			description: 'Enforce JST file roles and slice structure.',
+			recommended: true,
+			url: 'https://github.com/jst-stack/eslint-plugin/blob/main/docs/rules/file-contract.md',
+		},
 		messages: {
 			fileName: 'Rename "{{name}}" to <lowerCamelName>.<role>.{{extension}} so its responsibility is explicit.',
 			roleDirectory: 'Move {{role}} files into the slice {{directory}} directory.',

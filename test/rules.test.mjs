@@ -16,6 +16,12 @@ const config = [{
 	rules: Object.fromEntries(Object.keys(plugin.rules).map(name => [`jst/${name}`, 'error'])),
 }]
 
+test('links every diagnostic to a stable repair guide', () => {
+	for (const [name, rule] of Object.entries(plugin.rules)) {
+		assert.equal(rule.meta.docs.url, `https://github.com/jst-stack/eslint-plugin/blob/main/docs/rules/${name}.md`)
+	}
+})
+
 test('enforces every layer direction and isolates slices', () => {
 	const allowed = {
 		app: ['app', 'pages', 'modules', 'widgets', 'features', 'entities', 'shared'],

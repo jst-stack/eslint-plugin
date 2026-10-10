@@ -4,7 +4,11 @@ import { getProjectPath } from '../lib/path.lib.mjs'
 
 export const uiContract = {
 	meta: {
-		docs: { description: 'Keep view modules props-driven and independent from orchestration.', recommended: true },
+		docs: {
+			description: 'Keep view modules props-driven and independent from orchestration.',
+			recommended: true,
+			url: 'https://github.com/jst-stack/eslint-plugin/blob/main/docs/rules/ui-contract.md',
+		},
 		messages: {
 			asyncView: 'View modules render props and emit callbacks. Move async orchestration into an entry, store, view model, or service.',
 			calculation: 'Move aggregation and in-place sorting out of the view into a model, selector, or view model.',

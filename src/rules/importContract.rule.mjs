@@ -5,7 +5,11 @@ import { getProjectPath } from '../lib/path.lib.mjs'
 
 export const importContract = {
 	meta: {
-		docs: { description: 'Enforce exact layer direction and slice isolation.', recommended: true },
+		docs: {
+			description: 'Enforce exact layer direction and slice isolation.',
+			recommended: true,
+			url: 'https://github.com/jst-stack/eslint-plugin/blob/main/docs/rules/import-contract.md',
+		},
 		messages: {
 			layer: '{{source}} cannot depend on {{target}}. Dependencies point app → pages → modules → widgets → features → entities → shared.',
 			publicApi: 'Import {{layer}}/{{slice}} through its {{slice}}{{suffix}} public API instead of deep-importing private implementation.',

@@ -4,6 +4,12 @@ Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
 ## Unreleased
 
+## 0.4.3
+
+- Link every architecture diagnostic to its stable repair guide.
+- Publish current installation, CI, and OpenSSF status in the package README.
+- Complete trusted npm releases with registry verification and matching GitHub Releases.
+
 ## 0.4.2
 
 - Read release identity from the package manifest before checking the npm registry.

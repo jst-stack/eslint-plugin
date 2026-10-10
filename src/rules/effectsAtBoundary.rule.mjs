@@ -4,7 +4,11 @@ import { getProjectPath } from '../lib/path.lib.mjs'
 
 export const effectsAtBoundary = {
 	meta: {
-		docs: { description: 'Keep browser and network effects behind adapters.', recommended: true },
+		docs: {
+			description: 'Keep browser and network effects behind adapters.',
+			recommended: true,
+			url: 'https://github.com/jst-stack/eslint-plugin/blob/main/docs/rules/effects-at-boundary.md',
+		},
 		messages: {
 			effect: 'Move {{effect}} access behind an entity repository or shared infrastructure adapter and inject its narrow port.',
 		},
