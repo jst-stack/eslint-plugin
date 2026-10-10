@@ -2,24 +2,24 @@
   "tolerance": 0.2,
   "results": {
     "architectureCold": {
-      "cpuMs": 2.699,
-      "peakMemoryBytes": 69304320,
-      "wallMs": 1.6201250000000016
+      "cpuMs": 8.192,
+      "peakMemoryBytes": 72663040,
+      "wallMs": 5.1285000000000025
     },
     "architectureCached": {
-      "cpuMs": 2.901,
-      "peakMemoryBytes": 69189632,
-      "wallMs": 1.7747909999999933
+      "cpuMs": 8.318,
+      "peakMemoryBytes": 72597504,
+      "wallMs": 5.090416000000005
     },
     "eslintCold": {
-      "cpuMs": 2513.892,
-      "peakMemoryBytes": 291471360,
-      "wallMs": 1877.552792
+      "cpuMs": 2603.729,
+      "peakMemoryBytes": 292601856,
+      "wallMs": 2020.9692499999999
     },
     "eslintCached": {
-      "cpuMs": 365.965,
-      "peakMemoryBytes": 127303680,
-      "wallMs": 242.876542
+      "cpuMs": 386.399,
+      "peakMemoryBytes": 126074880,
+      "wallMs": 256.87141599999995
     }
   }
 }
