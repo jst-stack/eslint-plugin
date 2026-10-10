@@ -29,12 +29,12 @@ finally {
 }
 
 async function createFixture(root) {
-	for (const layer of ['app', 'pages', 'widgets', 'features', 'entities', 'shared']) {
+	for (const layer of ['app', 'pages', 'modules', 'widgets', 'features', 'entities', 'shared']) {
 		await mkdir(join(root, 'src', layer), { recursive: true })
 	}
 	await mkdir(join(root, 'src/app/container'), { recursive: true })
 	await writeFile(join(root, 'package.json'), '{"dependencies":{"@needle-di/core":"1.2.1"}}\n')
-	await writeFile(join(root, 'src/app/container/container.composition.ts'), "const providers = import.meta.glob(['../../entities/**/*.provider.ts','../../features/**/*.provider.ts','../../shared/**/*.provider.ts'], { eager: true })\nexport { providers }\n")
+	await writeFile(join(root, 'src/app/container/container.composition.ts'), "const providers = import.meta.glob(['../../entities/**/*.provider.ts','../../features/**/*.provider.ts','../../modules/**/*.provider.ts','../../shared/**/*.provider.ts'], { eager: true })\nexport { providers }\n")
 	await writeFile(join(root, 'eslint.config.mjs'), `import jst from ${JSON.stringify(new URL('../src/index.mjs', import.meta.url).href)}\nexport default jst.createConfig()\n`)
 	for (let index = 0; index < 1000; index += 1) {
 		const imports = Array.from({ length: 10 }, (_, offset) => `import { value as value${offset} } from './fixture${(index + offset + 1) % 1000}.lib.ts'`).join('\n')
