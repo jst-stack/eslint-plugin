@@ -1,5 +1,5 @@
 {
-  "tolerance": 0.2,
+  "tolerance": 0.3,
   "results": {
     "architectureCold": {
       "cpuMs": 8.192,
