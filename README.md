@@ -1,19 +1,23 @@
 # @jst-stack/eslint-plugin
 
+[![npm](https://img.shields.io/npm/v/@jst-stack/eslint-plugin?style=flat-square)](https://www.npmjs.com/package/@jst-stack/eslint-plugin)
+[![CI](https://img.shields.io/github/actions/workflow/status/jst-stack/eslint-plugin/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/jst-stack/eslint-plugin/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/jst-stack/eslint-plugin/badge)](https://scorecard.dev/viewer/?uri=github.com/jst-stack/eslint-plugin)
+
 Executable architecture and source-quality contracts for JST React applications.
 
 The default preset works out of the box, but every project convention lives in one typed, runtime-validated policy. Unknown keys and inconsistent combinations fail before linting starts.
 
 ## Install
 
-Until the package is published to npm, install it from GitHub:
+Install the published package:
 
 ```bash
-npm install --save-dev github:jst-stack/eslint-plugin
+npm install --save-dev @jst-stack/eslint-plugin
 ```
 
 The package requires ESLint 9.5+ or 10 and Node.js 24.15+.
-For reproducible application builds, pin the reviewed commit in `package.json`.
+Commit the generated lockfile for reproducible application builds.
 
 ## Use the strict defaults
 
