@@ -2,6 +2,12 @@
 
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
+## 0.4.5
+
+- Add stable structured diagnostics for architecture, style, budget, and workspace checks.
+- Support human-readable and JSON CLI output with distinct policy and execution exit statuses.
+- Document every diagnostic code, repair, and stable reference URL.
+
 ## 0.4.4
 
 - Reject class instances and other non-plain objects at the policy trust boundary.

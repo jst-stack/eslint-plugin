@@ -269,6 +269,14 @@ Add cross-file architecture and stylesheet ownership checks alongside ESLint:
 }
 ```
 
+Use `--format json` when an editor, CI integration, or coding agent needs stable codes and repair metadata:
+
+```bash
+npx jst-lint architecture --format json
+```
+
+Human-readable output remains the default. Policy violations exit with status `1`; invocation or execution failures exit with status `2`. See the [diagnostic contract](docs/cli-diagnostics.md).
+
 Use `*.adapter.ts` for browser and HTTP adapters. React Router reserves `*.client.*` for client-only modules, so it is intentionally not a default JST role.
 
 ### Bounded contexts and packages

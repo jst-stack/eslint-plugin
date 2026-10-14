@@ -1,5 +1,6 @@
 import { access, readFile, readdir } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
+import { diagnostic, fail } from '../diagnostics/diagnostic.model.mjs'
 
 const sourcePattern = /\.(?:js|jsx|mjs|ts|tsx)$/u
 const importPattern = /(?:from\s*|import\s*(?:\(\s*)?)['"]([^'"]+)['"]/gu
@@ -36,20 +37,35 @@ async function findPackages(root, packageRoots) {
 async function readPackage(path) {
 	const manifestPath = resolve(path, 'package.json')
 	if (!await exists(manifestPath)) {
-		throw new Error(`Workspace package is missing package.json: ${path}`)
+		fail(diagnostic(
+			'workspace.manifest-missing',
+			'Workspace package is missing package.json.',
+			'Add a package.json with an explicit name and public export.',
+			path,
+		))
 	}
 	return { ...await readJson(manifestPath), path }
 }
 
 async function validatePackage(root, manifest, packageNames, policy) {
 	if (typeof manifest.name !== 'string' || !manifest.name) {
-		throw new Error(`Workspace package must declare a name: ${manifest.path}`)
+		fail(diagnostic('workspace.name-missing', 'Workspace package must declare a name.', 'Add a unique package name to package.json.', manifest.path))
 	}
 	if (!hasPublicEntry(manifest.exports)) {
-		throw new Error(`${manifest.name} must expose one explicit "." public entry through package.json exports.`)
+		fail(diagnostic(
+			'workspace.public-entry',
+			`${manifest.name} must expose one explicit "." public entry through package.json exports.`,
+			'Add an explicit exports["."] entry and keep implementation paths private.',
+			manifest.path,
+		))
 	}
 	if (Object.keys(manifest.exports).some(key => key.includes('*'))) {
-		throw new Error(`${manifest.name} must not expose wildcard deep imports.`)
+		fail(diagnostic(
+			'workspace.wildcard-export',
+			`${manifest.name} must not expose wildcard deep imports.`,
+			'Remove wildcard exports and expose only narrow supported public entries.',
+			manifest.path,
+		))
 	}
 	await validateDecision(root, manifest, policy)
 	await validateImports(manifest, packageNames)
@@ -63,18 +79,33 @@ function hasPublicEntry(exports) {
 async function validateDecision(root, manifest, policy) {
 	const decision = manifest.jst?.architectureDecision
 	if (typeof decision !== 'string' || !decision) {
-		throw new Error(`${manifest.name} must link jst.architectureDecision to its extraction ADR.`)
+		fail(diagnostic(
+			'workspace.decision-link',
+			`${manifest.name} must link jst.architectureDecision to its extraction ADR.`,
+			'Add jst.architectureDecision to package.json and point it to the package extraction ADR.',
+			manifest.path,
+		))
 	}
 	const decisionPath = resolve(manifest.path, decision)
 	const decisionRoot = resolve(root, policy.architecture.decisionDirectory)
 	if (!isWithin(decisionRoot, decisionPath)) {
-		throw new Error(`${manifest.name} architecture decision must live under ${policy.architecture.decisionDirectory}.`)
+		fail(diagnostic(
+			'workspace.decision-location',
+			`${manifest.name} architecture decision must live under ${policy.architecture.decisionDirectory}.`,
+			'Move the ADR under the configured decision directory and update jst.architectureDecision.',
+			decisionPath,
+		))
 	}
 	const source = await readFile(decisionPath, 'utf8')
 	const missing = policy.architecture.requiredDecisionHeadings
 		.filter(heading => !new RegExp(`^## ${escapeRegExp(heading)}\\s*$`, 'mu').test(source))
 	if (missing.length) {
-		throw new Error(`${manifest.name} architecture decision is missing headings: ${missing.join(', ')}`)
+		fail(diagnostic(
+			'workspace.decision-headings',
+			`${manifest.name} architecture decision is missing headings: ${missing.join(', ')}.`,
+			'Add every required decision heading and record the extraction trade-offs.',
+			decisionPath,
+		))
 	}
 }
 
@@ -89,10 +120,20 @@ async function validateImports(manifest, packageNames) {
 		for (const specifier of source.matchAll(importPattern)) {
 			const name = packageName(specifier[1])
 			if (specifier[1].includes('/src/')) {
-				throw new Error(`${manifest.name} deep-imports package source from ${specifier[1]}. Import its public entry.`)
+				fail(diagnostic(
+					'workspace.deep-import',
+					`${manifest.name} deep-imports package source from ${specifier[1]}.`,
+					'Import the dependency package public entry instead of its source directory.',
+					file,
+				))
 			}
 			if (packageNames.has(name) && !declared.has(name)) {
-				throw new Error(`${manifest.name} imports undeclared workspace dependency ${name}.`)
+				fail(diagnostic(
+					'workspace.undeclared-dependency',
+					`${manifest.name} imports undeclared workspace dependency ${name}.`,
+					`Declare ${name} in the importing package dependencies.`,
+					file,
+				))
 			}
 		}
 	}
@@ -104,12 +145,22 @@ function validateDeployableContract(manifest) {
 	}
 	for (const field of ['fallback', 'hostContract', 'owner']) {
 		if (typeof manifest.jst[field] !== 'string' || !manifest.jst[field]) {
-			throw new Error(`${manifest.name} microfrontend must declare jst.${field}.`)
+			fail(diagnostic(
+				'workspace.microfrontend-contract',
+				`${manifest.name} microfrontend must declare jst.${field}.`,
+				`Define jst.${field} in the package manifest before deploying it independently.`,
+				manifest.path,
+			))
 		}
 	}
 	for (const script of ['build', 'test']) {
 		if (typeof manifest.scripts?.[script] !== 'string') {
-			throw new Error(`${manifest.name} microfrontend must have an independent ${script} script.`)
+			fail(diagnostic(
+				'workspace.microfrontend-script',
+				`${manifest.name} microfrontend must have an independent ${script} script.`,
+				`Add a working ${script} script to the package manifest.`,
+				manifest.path,
+			))
 		}
 	}
 }
@@ -118,7 +169,12 @@ function assertWorkspaceConfigured(manifest, packageRoots) {
 	const workspaces = Array.isArray(manifest.workspaces) ? manifest.workspaces : manifest.workspaces?.packages
 	const expected = packageRoots.map(root => `${root}/*`)
 	if (!Array.isArray(workspaces) || expected.some(pattern => !workspaces.includes(pattern))) {
-		throw new Error(`Root package.json workspaces must include: ${expected.join(', ')}`)
+		fail(diagnostic(
+			'workspace.root-registration',
+			`Root package.json workspaces must include: ${expected.join(', ')}.`,
+			'Add the configured package-root patterns to root package.json workspaces.',
+			'package.json',
+		))
 	}
 }
 
@@ -134,7 +190,11 @@ function assertAcyclic(manifests) {
 
 function visit(name, graph, path) {
 	if (graph.active.has(name)) {
-		throw new Error(`Workspace package cycle: ${[...path, name].join(' -> ')}`)
+		fail(diagnostic(
+			'workspace.dependency-cycle',
+			`Workspace package cycle: ${[...path, name].join(' -> ')}.`,
+			'Invert or extract a narrow contract so package dependencies remain acyclic.',
+		))
 	}
 	if (graph.visited.has(name)) {
 		return
