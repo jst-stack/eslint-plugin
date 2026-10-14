@@ -2,6 +2,10 @@
 
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
+## 0.4.6
+
+- Register every CLI diagnostic code and reject unknown or duplicate contract definitions in tests.
+
 ## 0.4.5
 
 - Add stable structured diagnostics for architecture, style, budget, and workspace checks.

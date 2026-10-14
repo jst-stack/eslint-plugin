@@ -5,8 +5,16 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { spawnSync } from 'node:child_process'
 import { test } from 'node:test'
+import { diagnostic, diagnosticCodes } from '../src/diagnostics/diagnostic.model.mjs'
 
 const cli = resolve('bin/jst-lint.mjs')
+
+test('keeps diagnostic codes unique and metadata mandatory', () => {
+	assert.equal(new Set(diagnosticCodes).size, diagnosticCodes.length)
+	const value = diagnostic('styles.module-name', 'reason', 'repair')
+	assert.deepEqual(Object.keys(value).sort(), ['code', 'docsUrl', 'message', 'repair'])
+	assert.throws(() => diagnostic('unknown.code', 'reason', 'repair'), /Unknown diagnostic code/u)
+})
 
 test('publishes one machine-readable diagnostic document', async () => {
 	const root = await mkdtemp(resolve(tmpdir(), 'jst-cli-'))
