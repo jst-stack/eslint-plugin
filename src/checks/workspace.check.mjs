@@ -1,9 +1,9 @@
 import { access, readFile, readdir } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
 import { diagnostic, fail } from '../diagnostics/diagnostic.model.mjs'
+import { collectModuleSpecifiers, parseModule } from '../lib/sourceAst.lib.mjs'
 
 const sourcePattern = /\.(?:js|jsx|mjs|ts|tsx)$/u
-const importPattern = /(?:from\s*|import\s*(?:\(\s*)?)['"]([^'"]+)['"]/gu
 
 export async function checkWorkspace(root, policy) {
 	const packages = await findPackages(root, policy.architecture.packageRoots)
@@ -117,12 +117,12 @@ async function validateImports(manifest, packageNames) {
 	])
 	for (const file of files) {
 		const source = await readFile(file, 'utf8')
-		for (const specifier of source.matchAll(importPattern)) {
-			const name = packageName(specifier[1])
-			if (specifier[1].includes('/src/')) {
+		for (const specifier of collectModuleSpecifiers(parseModule(source, file))) {
+			const name = packageName(specifier)
+			if (specifier.includes('/src/')) {
 				fail(diagnostic(
 					'workspace.deep-import',
-					`${manifest.name} deep-imports package source from ${specifier[1]}.`,
+					`${manifest.name} deep-imports package source from ${specifier}.`,
 					'Import the dependency package public entry instead of its source directory.',
 					file,
 				))

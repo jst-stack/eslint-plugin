@@ -26,6 +26,8 @@ test('accepts the kernel and rejects unowned styles', async () => {
 		await writeFile(resolve(root, 'src/shared/di/serviceLocator.context.ts'), 'export const useService = () => null\n')
 		await checkArchitecture(root)
 		await checkStyles(root)
+		await writeFile(resolve(root, 'src/app/container/container.composition.ts'), "// '../../entities/**/*.provider.ts'\n")
+		await assert.rejects(checkArchitecture(root), /must auto-discover provider modules/u)
 
 		await mkdir(resolve(root, 'src/features/orders/ui'), { recursive: true })
 		await writeFile(resolve(root, 'src/features/orders/ui/orphan.css'), '')
@@ -47,6 +49,11 @@ test('requires bounded-context public APIs and enforces their export budget', as
 			checkArchitecture(root, defineConfig({ limits: { maxPublicApiExports: 1 } })),
 			/exposes 2 public entries/u,
 		)
+		await writeFile(resolve(root, 'src/modules/billing/billing.public.ts'), 'const billing = 1\nconst invoice = 2\nexport { billing, invoice }\n')
+		await assert.rejects(
+			checkArchitecture(root, defineConfig({ limits: { maxPublicApiExports: 1 } })),
+			/exposes 2 public entries/u,
+		)
 	}
 	finally {
 		await rm(root, { force: true, recursive: true })
@@ -59,6 +66,8 @@ test('requires discovered providers to declare their request lifetime', async ()
 		await mkdir(resolve(root, 'src/features/orders'), { recursive: true })
 		const provider = resolve(root, 'src/features/orders/orders.provider.ts')
 		await writeFile(provider, 'export function provider() {}\n')
+		await assert.rejects(checkArchitecture(root), /must declare request scope/u)
+		await writeFile(provider, "// export const scope = 'request' as const\nexport function provider() {}\n")
 		await assert.rejects(checkArchitecture(root), /must declare request scope/u)
 		await writeFile(provider, "export const scope = 'request' as const\nexport function provider() {}\n")
 		await checkArchitecture(root)
@@ -77,6 +86,11 @@ test('enforces workspace public entries, ADRs, declared dependencies, and acycli
 		})
 		await createWorkspacePackage(root, 'payments', { source: 'export const payments = true\n' })
 		await checkArchitecture(root)
+		await writeFile(resolve(root, 'packages/orders/src/index.ts'), "// import '@jst-internal/missing'\nexport const orders = true\n")
+		await checkArchitecture(root)
+		await writeFile(resolve(root, 'packages/orders/src/index.ts'), "export const load = () => import('@jst-internal/payments/src/internal')\n")
+		await assert.rejects(checkArchitecture(root), /deep-imports package source/u)
+		await writeFile(resolve(root, 'packages/orders/src/index.ts'), "import '@jst-internal/payments'\nexport const orders = true\n")
 
 		const orders = JSON.parse(await readFile(resolve(root, 'packages/orders/package.json'), 'utf8'))
 		orders.dependencies = {}
