@@ -4,6 +4,7 @@ import process from 'node:process'
 import { defaultPolicy } from '../configs/defaultPolicy.config.mjs'
 import { diagnostic, fail } from '../diagnostics/diagnostic.model.mjs'
 import { findExisting, listFiles } from '../lib/files.lib.mjs'
+import { collectStringLiterals, countPublicExports, exportedRequestScope, parseModule } from '../lib/sourceAst.lib.mjs'
 import { checkWorkspace } from './workspace.check.mjs'
 
 export async function checkArchitecture(root = process.cwd(), policy = defaultPolicy) {
@@ -18,7 +19,7 @@ async function assertProviderScopes(root) {
 	const files = await listFiles(resolve(root, 'src'))
 	for (const path of files.filter(file => file.endsWith('.provider.ts'))) {
 		const source = await readFile(path, 'utf8')
-		if (!/export const scope = ['"]request['"] as const/u.test(source)) {
+		if (!exportedRequestScope(parseModule(source, path))) {
 			fail(diagnostic(
 				'architecture.provider-scope',
 				'DI provider must declare request scope.',
@@ -42,7 +43,7 @@ async function assertModulePublicApis(root, policy) {
 				publicApi,
 			))
 		})
-		const exports = source.match(/^export\s/gmu)?.length ?? 0
+		const exports = countPublicExports(parseModule(source, publicApi))
 		if (exports > policy.limits.maxPublicApiExports) {
 			fail(diagnostic(
 				'architecture.module-public-api-budget',
@@ -80,8 +81,9 @@ async function assertDiKernel(root, policy) {
 	}
 	const path = await findExisting(root, policy.architecture.containerFiles)
 	const source = await readFile(path, 'utf8')
+	const literals = collectStringLiterals(parseModule(source, path))
 	const missingGlobs = policy.architecture.providerGlobs
-		.filter(glob => !source.includes(`'${glob}'`) && !source.includes(`"${glob}"`))
+		.filter(glob => !literals.has(glob))
 	if (missingGlobs.length) {
 		fail(diagnostic(
 			'architecture.provider-discovery',
