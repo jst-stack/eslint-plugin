@@ -49,6 +49,13 @@ test('preserves legacy UI exceptions across the split plugins', () => {
 	assert.equal(exception.rules['quality/no-heavy-render-work'], 'off')
 })
 
+test('composes quality rules without redefining the TypeScript parser plugin', () => {
+	const configs = plugin.createConfig()
+	assert.equal(configs.some(config => config.plugins?.ts), false)
+	assert.ok(configs.some(config => config.languageOptions?.parser))
+	assert.ok(configs.some(config => config.rules?.['quality/no-heavy-render-work']))
+})
+
 test('derives UI import restrictions from the configured alias and policy patterns', () => {
 	const uiConfig = plugin.createConfig({
 		imports: { alias: '~/' },
