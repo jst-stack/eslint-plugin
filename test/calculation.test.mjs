@@ -32,7 +32,7 @@ export function Orders({ items }: { items: string[] }) {
 		]
 		const eslint = new ESLint({ cwd: root, overrideConfig: config, overrideConfigFile: true })
 		const [result] = await eslint.lintFiles(['src/**/*.tsx'])
-		const calculations = result.messages.filter(message => message.ruleId === 'jst/ui-contract' && /aggregation/u.test(message.message))
+		const calculations = result.messages.filter(message => message.ruleId === 'quality/no-heavy-render-work')
 		assert.equal(calculations.length, 1)
 	}
 	finally {

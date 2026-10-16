@@ -1,7 +1,7 @@
 {
 	"name": "@jst-stack/eslint-plugin",
-	"version": "0.4.6",
-	"description": "Executable architecture and source-quality contracts for JST React applications.",
+	"version": "0.5.0",
+	"description": "Compatibility bundle for JST architecture and source-quality ESLint plugins.",
 	"type": "module",
 	"license": "MIT",
 	"engines": {
@@ -62,6 +62,8 @@
 		"react"
 	],
 	"dependencies": {
+		"@jst-stack/eslint-plugin-architecture": "^0.1.0",
+		"@jst-stack/eslint-plugin-quality": "^0.1.0",
 		"eslint-plugin-import-x": "^4.17.1"
 	}
 }
