@@ -2,6 +2,11 @@
 
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
+## 0.5.1
+
+- Compose only JST quality rules when another preset already owns JavaScript and TypeScript correctness.
+- Adopt the hardened quality 0.2 preset without redefining the TypeScript parser plugin.
+
 ## 0.5.0
 
 - Delegate reusable code-quality checks to `@jst-stack/eslint-plugin-quality`.

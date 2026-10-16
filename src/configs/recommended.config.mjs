@@ -1,9 +1,15 @@
 import architecture from '@jst-stack/eslint-plugin-architecture'
 import quality from '@jst-stack/eslint-plugin-quality'
+import tsParser from '@typescript-eslint/parser'
+
+const typeScriptFiles = ['**/*.{ts,tsx}']
+const reactJavaScriptFiles = ['**/*.jsx']
 
 export function createRecommendedConfig(policy) {
 	return [
-		...quality.createConfig(toQualityPolicy(policy)),
+		{ files: reactJavaScriptFiles, languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
+		{ files: typeScriptFiles, languageOptions: { parser: tsParser, parserOptions: { ecmaFeatures: { jsx: true } } } },
+		...quality.createRulesConfig(toQualityPolicy(policy)),
 		...architecture.createConfig(toArchitecturePolicy(policy)),
 	]
 }
