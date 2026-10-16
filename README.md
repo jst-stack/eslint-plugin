@@ -4,7 +4,12 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/jst-stack/eslint-plugin/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/jst-stack/eslint-plugin/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/jst-stack/eslint-plugin/badge)](https://scorecard.dev/viewer/?uri=github.com/jst-stack/eslint-plugin)
 
-Executable architecture and source-quality contracts for JST React applications.
+Compatibility bundle for the two independent JST linting packages:
+
+- [`@jst-stack/eslint-plugin-quality`](https://github.com/jst-stack/eslint-plugin-quality) enforces framework-independent TypeScript and React quality;
+- [`@jst-stack/eslint-plugin-architecture`](https://github.com/jst-stack/eslint-plugin-architecture) enforces dependency direction, slice isolation, effects, DI, files, styles, budgets, and workspace contracts.
+
+Use this package in existing JST applications that want one policy and one preset. New non-JST projects can install the quality package alone; new JST projects install both packages directly.
 
 The default preset works out of the box, but every project convention lives in one typed, runtime-validated policy. Unknown keys and inconsistent combinations fail before linting starts.
 
@@ -54,7 +59,7 @@ The preset enforces:
 - props-driven UI without async orchestration, aggregation, or flag-prop combinations;
 - complexity, nesting, parameter, function-size, and file-size limits.
 
-Rule reference: [`import-contract`](docs/rules/import-contract.md), [`file-contract`](docs/rules/file-contract.md), [`effects-at-boundary`](docs/rules/effects-at-boundary.md), [`ui-contract`](docs/rules/ui-contract.md), and [`disable-directive`](docs/rules/disable-directive.md).
+Architecture rule documentation now lives in [`eslint-plugin-architecture`](https://github.com/jst-stack/eslint-plugin-architecture/tree/main/docs/rules); reusable quality rule documentation lives in [`eslint-plugin-quality`](https://github.com/jst-stack/eslint-plugin-quality/tree/main/docs/rules).
 
 Tests may reach composition roots. Production slices must communicate through a higher composition layer or a narrow injected port.
 Cross-layer consumers import sliced modules through `<slice>.public.ts`; deep imports are rejected. Circular production imports are rejected as well.

@@ -1,7 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { Linter } from 'eslint'
-import typescriptParser from '@typescript-eslint/parser'
 import plugin from '../src/index.mjs'
 
 const linter = new Linter({ configType: 'flat' })
@@ -18,7 +17,7 @@ const config = [{
 
 test('links every diagnostic to a stable repair guide', () => {
 	for (const [name, rule] of Object.entries(plugin.rules)) {
-		assert.equal(rule.meta.docs.url, `https://github.com/jst-stack/eslint-plugin/blob/main/docs/rules/${name}.md`)
+		assert.equal(rule.meta.docs.url, `https://github.com/jst-stack/eslint-plugin-architecture/blob/main/docs/rules/${name}.md`)
 	}
 })
 
@@ -98,7 +97,7 @@ test('creates a custom standard without editing rule implementations', () => {
 	})
 	assert.equal(errors(linter.verify('export const value = 1', custom, { filename: 'src/shared/lib/value.spec.ts' })).length, 0)
 	assert.match(text(linter.verify('export const value = 1', custom, { filename: 'src/shared/lib/value.test.ts' })), /Rename "value\.test\.ts"/u)
-	assert.deepEqual(custom[0].rules['max-lines'], ['error', { max: 400, skipBlankLines: true, skipComments: true }])
+	assert.deepEqual(custom.find(entry => entry.rules?.['max-lines']).rules['max-lines'], ['error', { max: 400, skipBlankLines: true, skipComments: true }])
 })
 
 test('keeps network, persistence, and browser effects behind adapters', () => {
@@ -146,7 +145,7 @@ test('rejects the five previously missed architecture violations', () => {
 		['export function Button({ primary, danger, compact }) { return null }', 'src/shared/ui/button.component.tsx'],
 	]
 	for (const [source, filename] of cases) {
-		assert.ok(errors(lint(source, filename)).length > 0, filename)
+		assert.ok(errors(lintAll(source, filename)).length > 0, filename)
 	}
 })
 
@@ -157,32 +156,29 @@ test('allows props-driven views, local presentation state, and repository effect
 })
 
 test('moves view calculations out while allowing render mapping', () => {
-	assert.match(text(lint('export function Total({ items }) { return items.reduce((sum, item) => sum + item.price, 0) }', 'src/features/orders/ui/total.component.tsx')), /Move aggregation/u)
+	assert.match(text(lintAll('export function Total({ items }) { return items.reduce((sum, item) => sum + item.price, 0) }', 'src/features/orders/ui/total.component.tsx')), /Move reduce/u)
 	assert.equal(errors(lint('export function List({ items }) { return items.map(item => item.name) }', 'src/features/orders/ui/list.component.tsx')).length, 0)
 })
 
 test('rejects inline JST disables and requires reasons for other suppressions', () => {
-	assert.match(text(lint('// eslint-disable-next-line jst/import-contract\nexport const value = 1', 'src/shared/lib/value.lib.ts')), /Do not disable JST rules inline/u)
-	assert.match(text(lint('// eslint-disable-next-line no-console\nconsole.log(1)', 'src/shared/lib/value.lib.ts')), /Add a -- description/u)
-	assert.doesNotMatch(text(lint('// eslint-disable-next-line no-console -- migration compatibility\nconsole.log(1)', 'src/shared/lib/value.lib.ts')), /Add a -- description/u)
+	assert.match(text(lint('// eslint-disable-next-line jst/import-contract\nexport const value = 1', 'src/shared/lib/value.lib.ts')), /Do not disable architecture rules inline/u)
+	assert.match(text(lintAll('// eslint-disable-next-line no-console\nconsole.log(1)', 'src/shared/lib/value.lib.ts')), /Explain this suppression/u)
+	assert.doesNotMatch(text(lintAll('// eslint-disable-next-line no-console -- migration compatibility\nconsole.log(1)', 'src/shared/lib/value.lib.ts')), /Explain this suppression/u)
 })
 
 test('checks typed component props without flagging unrelated domain types', () => {
 	const invalid = 'interface ButtonProps { primary: boolean; danger: boolean }\nexport function Button(props: ButtonProps) { return null }'
 	const unrelated = 'interface FeatureFlags { primary: boolean; danger: boolean }\nexport function Button() { return null }'
-	assert.match(text(lintTypescript(invalid, 'src/shared/ui/button.component.tsx')), /Replace boolean variant props/u)
-	assert.doesNotMatch(text(lintTypescript(unrelated, 'src/shared/ui/button.component.tsx')), /Replace boolean variant props/u)
+	assert.match(text(lintAll(invalid, 'src/shared/ui/button.component.tsx')), /Replace boolean variant props/u)
+	assert.doesNotMatch(text(lintAll(unrelated, 'src/shared/ui/button.component.tsx')), /Replace boolean variant props/u)
 })
 
 function lint(code, filename) {
 	return linter.verify(code, config, { filename })
 }
 
-function lintTypescript(code, filename) {
-	return linter.verify(code, [{
-		...config[0],
-		languageOptions: { ...config[0].languageOptions, parser: typescriptParser },
-	}], { filename })
+function lintAll(code, filename) {
+	return linter.verify(code, plugin.configs.recommended, { filename })
 }
 
 function errors(messages) {

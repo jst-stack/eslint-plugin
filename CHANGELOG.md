@@ -2,6 +2,12 @@
 
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
+## 0.5.0
+
+- Delegate reusable code-quality checks to `@jst-stack/eslint-plugin-quality`.
+- Delegate architecture rules and the `jst-lint` CLI to `@jst-stack/eslint-plugin-architecture`.
+- Keep the existing combined policy and preset as a compatibility path for JST applications.
+
 ## 0.4.6
 
 - Register every CLI diagnostic code and reject unknown or duplicate contract definitions in tests.

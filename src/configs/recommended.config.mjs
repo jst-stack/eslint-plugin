@@ -1,46 +1,42 @@
-import { createPolicy } from './defaultPolicy.config.mjs'
-import importPlugin from 'eslint-plugin-import-x'
+import architecture from '@jst-stack/eslint-plugin-architecture'
+import quality from '@jst-stack/eslint-plugin-quality'
 
-export function createRecommendedConfig(plugin, overrides) {
-	const policy = createPolicy(overrides)
-	const layerGlob = Object.keys(policy.imports.layers).join(',')
-	const slicedLayerGlob = policy.imports.slicedLayers.join(',')
-	const uiForbiddenImports = policy.ui.forbiddenImportPatterns
-		.map(pattern => pattern.replaceAll('{alias}', policy.imports.alias))
+export function createRecommendedConfig(policy) {
 	return [
-		{
-			files: [`src/{${layerGlob}}/**/*.{js,jsx,mjs,ts,tsx}`],
-			linterOptions: { reportUnusedDisableDirectives: 'error' },
-			plugins: { 'import-x': importPlugin, jst: plugin },
-			rules: {
-				'complexity': ['error', policy.limits.complexity],
-				'import-x/no-cycle': ['error', { ignoreExternal: true }],
-				'jst/effects-at-boundary': ['error', policy.effects],
-				'jst/disable-directive': 'error',
-				'jst/file-contract': ['error', policy.files],
-				'jst/import-contract': ['error', policy],
-				'jst/ui-contract': ['error', policy.ui],
-				'max-depth': ['error', policy.limits.maxDepth],
-				'max-lines': ['error', { max: policy.limits.maxLines, skipBlankLines: true, skipComments: true }],
-				'max-lines-per-function': ['error', { max: policy.limits.maxLinesPerFunction, skipBlankLines: true, skipComments: true }],
-				'max-params': ['error', policy.limits.maxParams],
-			},
-		},
-		{
-			files: [`src/{${slicedLayerGlob}}/*/ui/**/*.{js,jsx,mjs,ts,tsx}`],
-			rules: {
-				'no-restricted-imports': ['error', {
-					patterns: [{
-						group: uiForbiddenImports,
-						message: 'UI receives state and actions through props. Keep DI and orchestration in the entry or composition root.',
-					}],
-				}],
-			},
-		},
-		...policy.exceptions.map(exception => ({
-			files: exception.files,
-			name: `jst/exception: ${exception.reason}`,
-			rules: Object.fromEntries(exception.rules.map(rule => [rule, 'off'])),
-		})),
+		...quality.createConfig(toQualityPolicy(policy)),
+		...architecture.createConfig(toArchitecturePolicy(policy)),
 	]
+}
+
+function toQualityPolicy(policy) {
+	return {
+		limits: {
+			complexity: policy.limits.complexity,
+			maxDepth: policy.limits.maxDepth,
+			maxLines: policy.limits.maxLines,
+			maxLinesPerFunction: policy.limits.maxLinesPerFunction,
+			maxParams: policy.limits.maxParams,
+		},
+		react: {
+			booleanVariantNames: policy.ui.booleanVariantNames,
+			calculationMethods: policy.ui.calculationMethods,
+		},
+	}
+}
+
+function toArchitecturePolicy(policy) {
+	return {
+		...policy,
+		exceptions: policy.exceptions.map(exception => ({
+			...exception,
+			rules: exception.rules.includes('jst/ui-contract')
+				? [...exception.rules, 'quality/no-flag-prop-combinations', 'quality/no-heavy-render-work']
+				: exception.rules,
+		})),
+		limits: { maxPublicApiExports: policy.limits.maxPublicApiExports },
+		ui: {
+			forbiddenImportPatterns: policy.ui.forbiddenImportPatterns,
+			statePackages: policy.ui.statePackages,
+		},
+	}
 }

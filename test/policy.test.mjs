@@ -33,18 +33,27 @@ test('normalizes, validates, and deeply freezes project policy', () => {
 
 test('turns reviewed policy exceptions into narrow ESLint overrides', async () => {
 	const { default: plugin } = await import('../src/index.mjs')
-	const [,, exception] = plugin.createConfig({
+	const exception = plugin.createConfig({
 		exceptions: [{ files: ['src/legacy/**'], owner: 'platform', reason: 'Remove after migration', rules: ['jst/import-contract'] }],
-	})
+	}).at(-1)
 	assert.deepEqual(exception.files, ['src/legacy/**'])
 	assert.deepEqual(exception.rules, { 'jst/import-contract': 'off' })
 })
 
+test('preserves legacy UI exceptions across the split plugins', () => {
+	const exception = plugin.createConfig({
+		exceptions: [{ files: ['src/legacy/**'], reason: 'Migrate component API', rules: ['jst/ui-contract'] }],
+	}).at(-1)
+	assert.equal(exception.rules['jst/ui-contract'], 'off')
+	assert.equal(exception.rules['quality/no-flag-prop-combinations'], 'off')
+	assert.equal(exception.rules['quality/no-heavy-render-work'], 'off')
+})
+
 test('derives UI import restrictions from the configured alias and policy patterns', () => {
-	const [, uiConfig] = plugin.createConfig({
+	const uiConfig = plugin.createConfig({
 		imports: { alias: '~/' },
 		ui: { forbiddenImportPatterns: ['{alias}composition/**', '**/*.store'] },
-	})
+	}).find(config => config.rules?.['no-restricted-imports'])
 	const [restriction] = uiConfig.rules['no-restricted-imports']
 	assert.equal(restriction, 'error')
 	assert.deepEqual(uiConfig.rules['no-restricted-imports'][1].patterns[0].group, ['~/composition/**', '**/*.store'])
