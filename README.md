@@ -301,3 +301,22 @@ A package with `jst.kind: "microfrontend"` must additionally declare `jst.owner`
 ## Policy migrations
 
 Policy additions are backward-compatible when defaults preserve existing behavior. A release that removes or changes a field records the replacement in [`CHANGELOG.md`](CHANGELOG.md) and ships a matching `jst migrate` step in `create-jst`. Unknown fields intentionally fail fast instead of being ignored. Upgrade the plugin and CLI together according to the JST compatibility manifest, run the migration from a clean Git tree, then run the complete project `check` command.
+
+## Add or update an invariant
+
+Every diagnostic code and ESLint message has one reproducible fixture in [`scripts/conformance/corpus.mjs`](scripts/conformance/corpus.mjs). Each case records the invalid files, the repaired files, and the expected outcome:
+
+| Field | CLI case (`runner: 'cli'`) | ESLint case (`runner: 'eslint'`) |
+| --- | --- | --- |
+| `check` | `architecture`, `styles`, or `budgets` | — |
+| `invalid.files` / `repaired.files` | file map for a temp project | file map for the in-process `Linter` |
+| `expectedDiagnostic` | one of the 24 CLI codes | — |
+| `expectedRule` + `expectedMessageId` | — | rule ID plus its message ID |
+
+The CLI runner spawns `bin/jst-lint.mjs <check> --format json` and asserts the emitted code, `docsUrl` fragment, and a non-empty repair; the ESLint runner lints both file maps through the recommended flat config and asserts the rule and message. Both runners also verify the repaired files pass.
+
+[`test/conformance.test.mjs`](test/conformance.test.mjs) runs the corpus, and `validateCorpus` fails fast on malformed entries: duplicate case IDs, duplicate or unregistered diagnostic codes, diagnostic codes or rules without a case, and unknown checks, runners, rules, or message IDs.
+
+To add or update an invariant, edit the matching entry in `scripts/conformance/corpus.mjs` and run `npm test`. Keep corpus fixtures under `scripts/conformance/` — `node --test` auto-discovers every file in a `test/` directory as a test.
+
+`npm run benchmark` records corpus execution time alongside the ESLint and architecture measurements; `benchmarks/baseline.json` stores the reference values and the `tolerance` regression threshold.

@@ -20,6 +20,9 @@
       "cpuMs": 386.399,
       "peakMemoryBytes": 126074880,
       "wallMs": 256.87141599999995
+    },
+    "corpus": {
+      "wallMs": 17452.705333
     }
   }
 }

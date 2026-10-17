@@ -14,10 +14,13 @@ try {
 		architectureCached: await measure('architecture', root, true),
 		eslintCold: await measure('eslint', root, false),
 		eslintCached: await measureWarmCache('eslint', root),
+		corpus: await measure('corpus', root, false),
 	}
 	if (process.argv.includes('--write-baseline')) {
 		await mkdir(dirname(baselinePath.pathname), { recursive: true })
-		await writeFile(baselinePath, `${JSON.stringify({ tolerance: 0.2, results }, null, 2)}\n`)
+		const existing = await readFile(baselinePath, 'utf8').catch(() => null)
+		const tolerance = existing ? JSON.parse(existing).tolerance : 0.2
+		await writeFile(baselinePath, `${JSON.stringify({ tolerance, results }, null, 2)}\n`)
 	}
 	else {
 		assertRegression(results, JSON.parse(await readFile(baselinePath, 'utf8')))
@@ -60,7 +63,7 @@ async function measureWarmCache(mode, root) {
 function assertRegression(results, baseline) {
 	const noiseFloor = { cpuMs: 50, peakMemoryBytes: 16 * 1024 * 1024, wallMs: 50 }
 	for (const [name, metrics] of Object.entries(results)) {
-		for (const metric of ['wallMs', 'cpuMs', 'peakMemoryBytes']) {
+		for (const metric of Object.keys(baseline.results[name])) {
 			const maximum = baseline.results[name][metric] * (1 + baseline.tolerance) + noiseFloor[metric]
 			if (metrics[metric] > maximum) {
 				throw new Error(`${name}.${metric} regressed: ${metrics[metric]} > ${maximum}.`)

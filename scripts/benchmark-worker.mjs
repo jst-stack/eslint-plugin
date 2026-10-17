@@ -15,13 +15,23 @@ if (mode === 'eslint') {
 else if (mode === 'architecture') {
 	await checkArchitecture(root, defaultPolicy)
 }
+else if (mode === 'corpus') {
+	const { corpus } = await import('../scripts/conformance/corpus.mjs')
+	const { runCorpus } = await import('../scripts/conformance/runner.mjs')
+	await runCorpus(corpus)
+}
 else {
 	throw new Error(`Unknown benchmark mode: ${mode}`)
 }
 
-const cpu = process.cpuUsage(cpuBefore)
-process.stdout.write(JSON.stringify({
-	cpuMs: (cpu.user + cpu.system) / 1000,
-	peakMemoryBytes: process.resourceUsage().maxRSS * 1024,
-	wallMs: performance.now() - startedAt,
-}))
+if (mode === 'corpus') {
+	process.stdout.write(JSON.stringify({ wallMs: performance.now() - startedAt }))
+}
+else {
+	const cpu = process.cpuUsage(cpuBefore)
+	process.stdout.write(JSON.stringify({
+		cpuMs: (cpu.user + cpu.system) / 1000,
+		peakMemoryBytes: process.resourceUsage().maxRSS * 1024,
+		wallMs: performance.now() - startedAt,
+	}))
+}
