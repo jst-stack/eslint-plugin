@@ -9,7 +9,7 @@ Compatibility bundle for the two independent JST linting packages:
 - [`@jst-stack/eslint-plugin-quality`](https://github.com/jst-stack/eslint-plugin-quality) enforces framework-independent TypeScript and React quality;
 - [`@jst-stack/eslint-plugin-architecture`](https://github.com/jst-stack/eslint-plugin-architecture) enforces dependency direction, slice isolation, effects, DI, files, styles, budgets, and workspace contracts.
 
-Use this package in existing JST applications that want one policy and one preset. New non-JST projects can install the quality package alone; new JST projects install both packages directly.
+Use this package in JST applications that want one policy and one preset; the JST template installs it for new projects. New non-JST projects can install the quality package alone, or install the architecture and quality packages directly for a custom split.
 
 The default preset works out of the box, but every project convention lives in one typed, runtime-validated policy. Unknown keys and inconsistent combinations fail before linting starts.
 

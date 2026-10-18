@@ -2,6 +2,10 @@
 
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
+## 0.5.2
+
+- Track the latest split packages: architecture 0.1.1 and quality 0.2.1.
+
 ## 0.5.1
 
 - Compose only JST quality rules when another preset already owns JavaScript and TypeScript correctness.
