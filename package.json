@@ -1,6 +1,6 @@
 {
 	"name": "@jst-stack/eslint-plugin",
-	"version": "0.5.1",
+	"version": "0.5.3",
 	"description": "Compatibility bundle for JST architecture and source-quality ESLint plugins.",
 	"type": "module",
 	"license": "MIT",
@@ -61,8 +61,8 @@
 		"react"
 	],
 	"dependencies": {
-		"@jst-stack/eslint-plugin-architecture": "^0.1.0",
-		"@jst-stack/eslint-plugin-quality": "^0.2.0",
+		"@jst-stack/eslint-plugin-architecture": "^0.1.1",
+		"@jst-stack/eslint-plugin-quality": "^0.2.1",
 		"@typescript-eslint/parser": "^8.71.2",
 		"eslint-plugin-import-x": "^4.17.1"
 	}
