@@ -30,6 +30,7 @@
 		"lint": "eslint . --max-warnings 0",
 		"test": "node --test",
 		"benchmark": "node scripts/run-benchmarks.mjs",
+		"benchmark:verify": "node scripts/run-benchmarks.mjs --verify-baseline",
 		"benchmark:update": "node scripts/run-benchmarks.mjs --write-baseline",
 		"check": "npm run lint && npm test && npm pack --dry-run",
 		"prepublishOnly": "npm run check"
