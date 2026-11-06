@@ -1,6 +1,6 @@
 {
 	"name": "@jst-stack/eslint-plugin",
-	"version": "0.5.3",
+	"version": "0.5.4",
 	"description": "Compatibility bundle for JST architecture and source-quality ESLint plugins.",
 	"type": "module",
 	"license": "MIT",
