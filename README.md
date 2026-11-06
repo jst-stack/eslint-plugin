@@ -21,7 +21,7 @@ Install the published package:
 npm install --save-dev @jst-stack/eslint-plugin
 ```
 
-The package requires ESLint 9.5+ or 10 and Node.js 24.15+.
+The package requires ESLint 9.5+ or 10 and Node.js 22.18+ (TypeScript configs load through the built-in type stripping).
 Commit the generated lockfile for reproducible application builds.
 
 ## Use the strict defaults
