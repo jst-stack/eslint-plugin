@@ -1,0 +1,17 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      id-token: write
+    uses: jst-stack/.github/.github/workflows/npm-release.yml@main

@@ -2,7 +2,13 @@
 
 Notable changes to `@jst-stack/eslint-plugin` are documented here.
 
+## 0.5.4
+
+- Require Node.js 22.18.0 or newer, where type stripping for `.ts` ESLint configs is available.
+- Cover Node.js 22.18.0 and 24.15.0 against ESLint 9 and 10 in CI.
+
 ## 0.5.3
+
 
 - Track the latest split packages: architecture 0.1.1 and quality 0.2.1.
 

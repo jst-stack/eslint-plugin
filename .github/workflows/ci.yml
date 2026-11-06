@@ -58,3 +58,11 @@ jobs:
       - run: npm ci
       - run: npm install --no-save --ignore-scripts eslint@${{ matrix.eslint }}
       - run: npm run check
+
+  release-metadata:
+    name: Release metadata
+    if: github.event_name == 'pull_request'
+    uses: jst-stack/.github/.github/workflows/npm-release-guard.yml@main
+    with:
+      base-sha: ${{ github.event.pull_request.base.sha }}
+      source-paths: src,lib,rules,bin
