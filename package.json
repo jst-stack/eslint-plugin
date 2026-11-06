@@ -28,6 +28,8 @@
 	],
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",
+		"audit:development": "node scripts/audit-development.mjs --production-level=moderate",
+		"audit:development:sync": "node scripts/sync-development-advisories.mjs --write --production-level=moderate",
 		"test": "node --test",
 		"benchmark": "node scripts/run-benchmarks.mjs",
 		"benchmark:verify": "node scripts/run-benchmarks.mjs --verify-baseline",
